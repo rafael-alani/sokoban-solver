@@ -6,7 +6,7 @@ public enum EPlace {
 
 	NONE(-1,     1024, (byte)0,             " #abcdefp$@", null),
 	BOX_ANY(0,   2048, STile.PLACE_FLAG, "oOABCDEFP", "EndPoint_Brown.png"),
-	BOX_1(1,     4096, STile.PLACE_FLAG, "1.*+", "EndPoint_Yellow.png"),
+	BOX_1(1,     4096, STile.PLACE_FLAG, ".1*+", "EndPoint_Yellow.png"),
 	BOX_2(2,     8192, STile.PLACE_FLAG, "2", "EndPoint_Blue.png"),
 	BOX_3(3,    16384, STile.PLACE_FLAG, "3", "EndPoint_Red.png"),
 	BOX_4(4,    32768, STile.PLACE_FLAG, "4", "EndPoint_Purple.png"),

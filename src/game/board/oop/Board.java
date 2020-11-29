@@ -246,7 +246,10 @@ public class Board implements Cloneable {
 				ESpace space = tiles[x][y].space;
 				
 				if (entity != null && entity.getType() != EEntity.NONE) {
-					System.out.print(entity.getType().getSymbol());
+                    if (entity.getType() == EEntity.BOX_1 && place == EPlace.BOX_1)
+                        System.out.print("*");  // box on a target
+                    else
+					    System.out.print(entity.getType().getSymbol());
 				} else
 				if (place != null && place != EPlace.NONE) {
 					System.out.print(place.getSymbol());

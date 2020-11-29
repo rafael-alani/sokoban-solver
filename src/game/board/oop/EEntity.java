@@ -5,13 +5,13 @@ import game.board.slim.STile;
 public enum EEntity {
 	
 	NONE(-1,   false,  false,   4, (byte)0,                " ", null, null),	
-	BOX_1(1,    true,  false,   8, STile.BOX_FLAG,    "aA$*", "CrateDark_Yellow.png", "Crate_Yellow.png"),
+	BOX_1(1,    true,  false,   8, STile.BOX_FLAG,    "$aA*", "CrateDark_Yellow.png", "Crate_Yellow.png"),
 	BOX_2(2,    true,  false,  16, STile.BOX_FLAG,    "bB", "CrateDark_Blue.png", "Crate_Blue.png"),
 	BOX_3(3,    true,  false,  32, STile.BOX_FLAG,    "cC", "CrateDark_Red.png", "Crate_Red.png"),
 	BOX_4(4,    true,  false,  64, STile.BOX_FLAG,    "dD", "CrateDark_Purple.png", "Crate_Purple.png"),
 	BOX_5(5,    true,  false, 128, STile.BOX_FLAG,    "eE", "CrateDark_Gray.png", "Crate_Gray.png"),
 	BOX_6(6,    true,  false, 256, STile.BOX_FLAG,    "fF", "CrateDark_Black.png", "Crate_Black.png"),
-	PLAYER(-1, false,   true, 512, STile.PLAYER_FLAG, "pP@+", null, null);
+	PLAYER(-1, false,   true, 512, STile.PLAYER_FLAG, "@pP+", null, null);
 	
 	/**
 	 * Any box, i.e., it can be any of {@link #BOX_1}, {@link #BOX_2}, {@link #BOX_3}, {@link #BOX_4}, {@link #BOX_5}, {@link #BOX_6}.
