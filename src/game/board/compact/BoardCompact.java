@@ -170,11 +170,16 @@ public class BoardCompact implements Cloneable {
 	 */
 	public void setState(StateMinimal state) {
 		playerX = state.getX(state.positions[0]);
-		playerY = state.getY(state.positions[1]);
+		playerY = state.getY(state.positions[0]);
+		boxCount = 0;
+
+		tiles[playerX][playerY] = (tiles[playerX][playerY] & EEntity.NULLIFY_ENTITY_FLAG) | EEntity.PLAYER.getFlag();
 		
 		for (int i = 1; i < state.positions.length; ++i) {
-			tiles[state.getX(state.positions[i])][state.getY(state.positions[i])] &= EEntity.BOX_1.getFlag();
-			if (CTile.forSomeBox(tiles[state.getX(state.positions[i])][state.getY(state.positions[i])])) ++boxInPlaceCount;
+			int x = state.getX(state.positions[i]);
+			int y = state.getY(state.positions[i]);
+			tiles[x][y] = (tiles[x][y] & EEntity.NULLIFY_ENTITY_FLAG) | EEntity.BOX_1.getFlag();
+			if (CTile.forSomeBox(tiles[x][y])) ++boxInPlaceCount;
 		}
 	}
 	
@@ -183,14 +188,20 @@ public class BoardCompact implements Cloneable {
 	 * @param state
 	 */
 	public void unsetState(StateMinimal state) {
+
+		tiles[playerX][playerY] = (tiles[playerX][playerY] & EEntity.NULLIFY_ENTITY_FLAG) | EEntity.NONE.getFlag();
+
 		playerX = -1;
 		playerY = -1;
 		boxInPlaceCount = -1;
+
 		for (int i = 1; i < state.positions.length; ++i) {
-			tiles[state.getX(state.positions[i])][state.getY(state.positions[i])] &= EEntity.NULLIFY_ENTITY_FLAG;
+			int x = state.getX(state.positions[i]);
+			int y = state.getY(state.positions[i]);
+			tiles[x][y] = (tiles[x][y] & EEntity.NULLIFY_ENTITY_FLAG) | EEntity.NONE.getFlag();
 		}
 	}
-	
+
 	/**
 	 * Prints the board into {@link System#out}.
 	 */
