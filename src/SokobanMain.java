@@ -15,7 +15,7 @@ public class SokobanMain {
     }
 
     public static SokobanResultType runLevel(
-        IAgent agent, String agentName, String levelset, int level,
+        IAgent agent, String agentId, String levelset, int level,
         String resultDir, int timeout, boolean verbose, boolean optimal) {
 
         agent.init(optimal, verbose);
@@ -27,7 +27,7 @@ public class SokobanMain {
             System.out.println();
 
         SokobanResult result =
-            Sokoban.simAgentLevel(null, levelset, level, timeout, agent, verbose, optimal);
+            Sokoban.simAgentLevel(agentId, levelset, level, timeout, agent, verbose, optimal);
 
         SokobanResultType resultType = result.getResult();
         System.out.printf("%s in %.1f ms",
@@ -47,17 +47,18 @@ public class SokobanMain {
         return resultType;
     }
 
-    static void runLevelSet(String agentName, String levelset, int maxFail, String resultDir,
+    static void runLevelSet(String agentId, String className, String levelset, int maxFail, String resultDir,
                             int timeout, boolean verbose, boolean optimal) {
-        System.out.printf("Running %s on levels in %s\n", agentName, levelset);
+        System.out.printf("Running %s on levels in %s\n", className, levelset);
 
         SokobanConfig config = new SokobanConfig();
+        config.id = agentId;
         config.requireOptimal = optimal;
         config.timeoutMillis = timeout;
         config.verbose = verbose;
 
         RunSokobanLevels run = new RunSokobanLevels(
-            config, agentName, levelset,
+            config, className, levelset,
             resultDir == null ? null : new File(resultDir), maxFail);
         run.run();
     }
@@ -65,6 +66,7 @@ public class SokobanMain {
     static void usage() {
         out.println("usage: sokoban [<agent-classname>] [<option>...]");
         out.println("options:");
+        out.println("  -id <name> : agent ID for reporting");
         out.println("  -level <num> : level number to play");
         out.println("  -levelset <name> : set of levels to play");
         out.println("  -maxfail <num> : maximum level failures allowed");
@@ -76,7 +78,8 @@ public class SokobanMain {
     }
 
 	public static void main(String[] args) throws Exception {
-        String agentName = null;
+        String agentId = null;
+        String className = null;
         String levelset = "easy.sok";
         int level = 0;
         int maxFail = 0;
@@ -88,6 +91,9 @@ public class SokobanMain {
         for (int i = 0 ; i < args.length ; ++i) {
             String s = args[i];
             switch (s) {
+                case "-id":
+                    agentId = args[++i];
+                    break;
                 case "-level":
                     level = Integer.parseInt(args[++i]);
                     break;
@@ -114,23 +120,24 @@ public class SokobanMain {
                 default:
                     if (s.startsWith("-"))
                         usage();
-                    agentName = s;
+                    className = s;
             }
         }
 
-        if (agentName == null)
+        if (className == null)
             if (level > 0)
                 Sokoban.playHumanLevel(levelset, level);
             else
                 Sokoban.playHumanFile(levelset);
         else
             if (level > 0) {
-                IAgent agent = (IAgent) Class.forName(agentName).getConstructor().newInstance();
+                IAgent agent = (IAgent) Class.forName(className).getConstructor().newInstance();
                 SokobanResultType resultType = runLevel(
-                    agent, agentName, levelset, level, resultDir, timeout, verbose, optimal);
+                    agent, agentId, levelset, level, resultDir, timeout, verbose, optimal);
                 System.exit(resultType.getExitValue());	    	    
             }
             else
-                runLevelSet(agentName, levelset, maxFail, resultDir, timeout, verbose, optimal);
+                runLevelSet(agentId, className, levelset, maxFail,
+                            resultDir, timeout, verbose, optimal);
     }
 }

@@ -29,7 +29,11 @@ public class RunSokobanLevels {
 		this.levelset = levelset;
 		this.resultDir = resultDir;
         this.maxFail = maxFail;
-	}
+    }
+    
+    String idOrAgentClass() {
+        return config.id == null ? agentClass : config.id;
+    }
 
     boolean solveLevel(int i) {
         // CONFIGURE PROGRAM PARAMS
@@ -53,6 +57,11 @@ public class RunSokobanLevels {
         args.add("SokobanMain");       // class to run
         
         args.add(agentClass);
+
+        if (config.id != null) {
+            args.add("-id");
+            args.add(config.id);
+        }
 
         args.add("-levelset");
         args.add(levelset);
@@ -115,7 +124,7 @@ public class RunSokobanLevels {
                     result.getResult() == SokobanResultType.VICTORY) {
 
                     highest = result;
-                    if (!highest.getId().equals(agentClass) ||
+                    if (!highest.getId().equals(idOrAgentClass()) ||
                         !highest.getLevelFile().equals(levelset)) {
                             throw new Error("unexpected entry in result file");
                         }
@@ -132,7 +141,7 @@ public class RunSokobanLevels {
                 writer.println(
                     "datetime;id;levelFile;timeout;maxFail;requireOptimal;highestSolved;steps;playTimeMillis");
             writer.printf("%s;%s;%s;%s;%s;%s;",
-                          start, agentClass, levelset,
+                          start, idOrAgentClass(), levelset,
                           config.timeoutMillis, maxFail, config.requireOptimal);
             if (highest != null)
                 writer.printf(

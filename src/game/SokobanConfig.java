@@ -9,12 +9,10 @@ public class SokobanConfig {
 	/**
 	 * Can be used to mark unique name of the simulation.
 	 */
-	public String id = "Sokoban";
+	public String id;
 	
 	/**
 	 * Sokoban level file to play.
-	 * 
-	 * FILE == play from file.
 	 */
 	public File levelFile;
 	
