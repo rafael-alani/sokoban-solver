@@ -2,8 +2,6 @@ package game;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -111,8 +109,8 @@ public class Sokoban {
 		// IMPL
 		Board result = null;
 		switch (config.levelFormat) {
-		case S4JL: result = Board.fromFileS4JL(config.level, config.levelNumber); break;
-		case SOK: result = Board.fromFileSok(config.level, config.levelNumber); break;
+		case S4JL: result = Board.fromFileS4JL(config.levelFile, config.levelNumber); break;
+		case SOK: result = Board.fromFileSok(config.levelFile, config.levelNumber); break;
 		}
 		result.validate();
 		return board = result;
@@ -161,55 +159,10 @@ public class Sokoban {
 		setConfig(config);
 		validateConfig();
 		
-		if (config.level.isDirectory()) {
-			runDir();			
-		} else 
-		if (config.level.isFile() && config.levelNumber == 0) {
+		if (config.levelNumber == 0) {
 			runFile();
 		} else {
 			runLevel();			
-		}
-	}
-	
-	private void runDir() {
-		// READ LEVELS
-		List<File> levels = new ArrayList<File>();		
-		SokobanConfig config = this.config;
-		File levelDir = config.level;
-		ELevelFormat levelFormat = config.levelFormat;
-		try {
-			for (File file : config.level.listFiles()) {
-				if (config.levelFormat != null) {
-					if (file.getAbsolutePath().endsWith(config.levelFormat.getExtension())) levels.add(file);
-				} else {
-					ELevelFormat format = determineLevelFormat(file.getName());
-					if (format != null) {
-						levels.add(file);
-					}
-				}
-			}
-			Collections.sort(levels, new Comparator<File>() {
-				@Override
-				public int compare(File o1, File o2) {
-					return o1.getName().compareTo(o2.getName());
-				}			
-			});
-			
-			// PLAY THROUGH LEVELS
-			for (File level : levels) {
-				// BIND LEVEL
-				this.config = config;
-				this.config.level = level;	
-				this.config.levelFormat = ELevelFormat.getExpectedLevelFormat(level);
-				this.config.levelNumber = 0;
-				// RUN GAME
-				runFile();				
-			}	
-		} finally {
-			if (config != null) {
-				config.level = levelDir;
-				config.levelFormat = levelFormat;
-			}
 		}
 	}
 	
@@ -381,11 +334,11 @@ public class Sokoban {
 		if (id == null) id = determineId(agent);
 		config.id = id;
 		config.agent = agent;
-		config.level = findFile(levelFilePath);
-		if (!config.level.exists() || !config.level.isFile())
-            throw new RuntimeException("Not a level file at '" + config.level.getAbsolutePath() +
+		config.levelFile = findFile(levelFilePath);
+		if (!config.levelFile.exists() || !config.levelFile.isFile())
+            throw new RuntimeException("Not a level file at '" + config.levelFile.getAbsolutePath() +
                                        "'\nResolved from: " + levelFilePath);
-        config.levelFormat = determineLevelFormat(config.level.getName());
+        config.levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelNumber = levelNumber;		
 		config.visualization = false;
         config.timeoutMillis = timeoutMillis;
@@ -417,10 +370,10 @@ public class Sokoban {
 		if (id == null) id = determineId(agent);
 		config.id = id;
 		config.agent = agent;
-		config.level = findFile(levelFilePath);
-		if (!config.level.exists() || !config.level.isFile())
-			throw new RuntimeException("Not a level file at '" + config.level.getAbsolutePath() + "'\nResolved from: " + levelFilePath);
-		if (levelFormat == null) levelFormat = determineLevelFormat(config.level.getName());
+		config.levelFile = findFile(levelFilePath);
+		if (!config.levelFile.exists() || !config.levelFile.isFile())
+			throw new RuntimeException("Not a level file at '" + config.levelFile.getAbsolutePath() + "'\nResolved from: " + levelFilePath);
+		if (levelFormat == null) levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelFormat = levelFormat;
 		config.levelNumber = levelNumber;		
 		config.visualization = true;
@@ -463,10 +416,10 @@ public class Sokoban {
 		if (id == null) id = determineId(agent);
 		config.id = id;
 		config.agent = agent;
-		config.level = findFile(levelFilePath);
-		if (!config.level.exists() || !config.level.isFile())
-			throw new RuntimeException("Not a level file at '" + config.level.getAbsolutePath() + "'\nResolved from: " + levelFilePath);
-		if (levelFormat == null) levelFormat = determineLevelFormat(config.level.getName());
+		config.levelFile = findFile(levelFilePath);
+		if (!config.levelFile.exists() || !config.levelFile.isFile())
+			throw new RuntimeException("Not a level file at '" + config.levelFile.getAbsolutePath() + "'\nResolved from: " + levelFilePath);
+		if (levelFormat == null) levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelFormat = levelFormat;
 		config.visualization = true;
 		config.timeoutMillis = timeoutMillis;

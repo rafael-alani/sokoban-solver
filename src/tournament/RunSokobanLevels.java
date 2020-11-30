@@ -1,8 +1,9 @@
 package tournament;
 
-import java.io.File;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,13 +92,56 @@ public class RunSokobanLevels {
 
 	public void run() {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %1$tT.%1$tL %5$s%n");
-        
+        LocalDateTime start = LocalDateTime.now();
+
         int count = SokobanLevel.getLevelCount(Sokoban.findFile(levelset));
-		int failed = 0;
+        int failed = 0;
 		
 		for (int i = 1; i <= count; ++i) {			
             if (!solveLevel(i) && ++failed == maxFail)
 	    		break;
-		}
+        }
+        
+        if (resultDir == null)
+            return;
+
+        SokobanResult highest = null;
+        try (BufferedReader reader = SokobanResult.openResultFile(resultDir)) {
+            while (true) {
+                SokobanResult result = SokobanResult.read(reader);
+                if (result == null)
+                    break;
+                if (!result.dateTime.isBefore(start) &&
+                    result.getResult() == SokobanResultType.VICTORY) {
+
+                    highest = result;
+                    if (!highest.getId().equals(agentClass) ||
+                        !highest.getLevelFile().equals(levelset)) {
+                            throw new Error("unexpected entry in result file");
+                        }
+                }
+            }
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+
+        File summary = new File(resultDir, "summary.csv");
+        boolean exists = summary.exists();
+        try (PrintWriter writer = new PrintWriter(new FileOutputStream(summary, true))) {
+            if (!exists)
+                writer.println(
+                    "datetime;id;levelFile;timeout;maxFail;requireOptimal;highestSolved;steps;playTimeMillis");
+            writer.printf("%s;%s;%s;%s;%s;%s;",
+                          start, agentClass, levelset,
+                          config.timeoutMillis, maxFail, config.requireOptimal);
+            if (highest != null)
+                writer.printf(
+                    "%s;%s;%s\n",
+                    highest.getLevel(), highest.getSteps(), highest.getSimTimeMillis());
+            else
+                writer.println("-1;-1;-1");
+        } catch (IOException e) {
+            throw new Error(e);
+        }
 	}
 }

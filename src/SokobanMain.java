@@ -41,8 +41,7 @@ public class SokobanMain {
         System.out.println();
 
         if (resultDir != null) {
-            new File(resultDir).mkdirs();
-            result.outputResult(new File(resultDir, "levels.csv"));
+            result.outputResult(resultDir);
         }
 
         return resultType;

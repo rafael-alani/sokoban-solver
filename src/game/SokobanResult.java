@@ -4,10 +4,11 @@ import java.io.*;
 import java.time.LocalDateTime;
 
 public class SokobanResult {
-    LocalDateTime dateTime;
+    public LocalDateTime dateTime;
 	private String id = null;
     private String levelFile;
     private int level;
+    private long timeout;
     private boolean requireOptimal;
 	private SokobanResultType result = null;
 	private Throwable exception;
@@ -18,8 +19,9 @@ public class SokobanResult {
     public SokobanResult(SokobanConfig config) {
         dateTime = LocalDateTime.now();
         id = config.id;
-        levelFile = config.level.getName();
+        levelFile = config.levelFileName();
         level = config.levelNumber;
+        timeout = config.timeoutMillis;
         requireOptimal = config.requireOptimal;
     }
 
@@ -111,34 +113,54 @@ public class SokobanResult {
 		return "SokobanResult[" + getResult() + "]";
 	}
     
-    public void outputResult(File resultFile) {
+    static final String Filename = "levels.csv";
+
+    static final String Headers =
+        "datetime;id;levelFile;timeout;requireOptimal;levelNumber;result;steps;playTimeMillis";
+
+    public void outputResult(String resultDir) {
+        new File(resultDir).mkdirs();
+        File resultFile = new File(resultDir, "levels.csv");
         boolean header = !resultFile.exists();
         
-        try (FileOutputStream output = new FileOutputStream(resultFile, true);
-             PrintWriter writer = new PrintWriter(output)) {
+        try (PrintWriter writer = new PrintWriter(new FileOutputStream(resultFile, true))) {
 			if (header) {
-                writer.println("datetime;id;levelFile;levelNumber;requireOptimal;" +
-                               "result;steps;playTimeMillis");
+                writer.println(Headers);
 			}
             writer.println(dateTime + ";" + id + ";" +
-                           levelFile + ";" + level + ";" +
-                           requireOptimal + ";" + result + ";" + steps + ";" +
+                           levelFile + ";" + timeout + ";" +
+                           requireOptimal + ";" + level + ";" + result + ";" + steps + ";" +
                            simTimeMillis);
 		} catch (IOException e) {
             throw new RuntimeException("Failed to append to the result file: " +
                                        resultFile.getAbsolutePath());
 		}
     }
-    
+
     void parse(String line) {
         String[] fields = line.split(";");
         dateTime = LocalDateTime.parse(fields[0]);
         id = fields[1];
         levelFile = fields[2];
-        level = Integer.parseInt(fields[3]);
+        timeout = Long.parseLong(fields[3]);
         requireOptimal = Boolean.parseBoolean(fields[4]);
-        result = SokobanResultType.valueOf(fields[5]);
-        steps = Integer.parseInt(fields[6]);
-        simTimeMillis = Long.parseLong(fields[7]);
+        level = Integer.parseInt(fields[5]);
+        result = SokobanResultType.valueOf(fields[6]);
+        steps = Integer.parseInt(fields[7]);
+        simTimeMillis = Long.parseLong(fields[8]);
+    }
+
+    public static BufferedReader openResultFile(File resultDir) throws IOException {
+        File resultFile = new File(resultDir, "levels.csv");
+        BufferedReader reader = new BufferedReader(new FileReader(resultFile));
+        String line = reader.readLine();
+        if (!line.equals(Headers))
+            throw new Error("incompatible file format");
+        return reader;
+    }
+
+    public static SokobanResult read(BufferedReader reader) throws IOException {
+        String line = reader.readLine();
+        return line == null ? null : new SokobanResult(line);
     }
 }

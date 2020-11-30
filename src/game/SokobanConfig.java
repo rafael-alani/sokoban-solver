@@ -12,20 +12,20 @@ public class SokobanConfig {
 	public String id = "Sokoban";
 	
 	/**
-	 * Sokoban level file or directory to play.
+	 * Sokoban level file to play.
 	 * 
 	 * FILE == play from file.
 	 */
-	public File level;
+	public File levelFile;
 	
 	/**
-	 * If {@link #level} is FILE, than this contains what number of the level to load; 1-based.
+	 * If {@link #levelFile} is FILE, than this contains what number of the level to load; 1-based.
 	 * 0 == run all levels sequentially.
 	 */
 	public int levelNumber;
 	
 	/**
-	 * Expected format of the level(s) in file {@link #level} file. Ignored if {@link #level} points to directory. In such a case,
+	 * Expected format of the level(s) in file {@link #levelFile} file. Ignored if {@link #levelFile} points to directory. In such a case,
 	 * {@link Sokoban} will play through all supported level files supported in alphabetic order.
 	 */
 	public ELevelFormat levelFormat;
@@ -49,6 +49,10 @@ public class SokobanConfig {
 
     public boolean requireOptimal = false;
 
+    public String levelFileName() {
+        return levelFile.getName();
+    }
+
 	/**
 	 * Validates the configuration; throws {@link RuntimeException} if config is found invalid. 
 	 */
@@ -57,11 +61,10 @@ public class SokobanConfig {
 		if (id.length() == 0) throw new RuntimeException("ID is of zero length.");
 		id = Sanitize.idify(id);
 		if (agent == null) throw new RuntimeException("Agent is null.");
-		if (level == null) throw new RuntimeException("Level is null.");
+		if (levelFile == null) throw new RuntimeException("Level is null.");
 		if (levelNumber < 0) throw new RuntimeException("LevelNumber < 0");
-		if (!level.exists()) throw new RuntimeException("Level '" + level.getAbsolutePath() + "' does not exist.");
-		if (!level.isFile() && !level.isDirectory()) throw new RuntimeException("Level '" + level.getAbsolutePath() + "' is neither a file nor a directory.");
-		if (level.isFile() && levelFormat == null) throw new RuntimeException("LevelFormat is null but Level points to a file '" + level.getAbsolutePath() + "'.");
+		if (!levelFile.exists()) throw new RuntimeException("Level '" + levelFile.getAbsolutePath() + "' does not exist.");
+		if (!levelFile.isFile() && !levelFile.isDirectory()) throw new RuntimeException("Level '" + levelFile.getAbsolutePath() + "' is neither a file nor a directory.");
+		if (levelFile.isFile() && levelFormat == null) throw new RuntimeException("LevelFormat is null but Level points to a file '" + levelFile.getAbsolutePath() + "'.");
 	}
-
 }
