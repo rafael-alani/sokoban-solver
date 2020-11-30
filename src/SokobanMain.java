@@ -16,7 +16,7 @@ public class SokobanMain {
 
     public static SokobanResultType runLevel(
         IAgent agent, String agentName, String levelset, int level,
-        String resultFile, int timeout, boolean verbose, boolean optimal) {
+        String resultDir, int timeout, boolean verbose, boolean optimal) {
 
         agent.init(optimal, verbose);
 
@@ -40,13 +40,15 @@ public class SokobanMain {
 
         System.out.println();
 
-        if (resultFile != null)
-            result.outputResult(new File(resultFile), levelset, level, agentName);
+        if (resultDir != null) {
+            new File(resultDir).mkdirs();
+            result.outputResult(new File(resultDir, "levels.csv"), levelset, level, agentName);
+        }
 
         return resultType;
     }
 
-    static void runLevelSet(String agentName, String levelset, int maxFail, String resultFile,
+    static void runLevelSet(String agentName, String levelset, int maxFail, String resultDir,
                             int timeout, boolean verbose, boolean optimal) {
         SokobanLevels levels = SokobanLevels.fromString(levelset + ";all");
         System.out.printf("Running %s on levels in %s\n", agentName, levelset);
@@ -58,7 +60,7 @@ public class SokobanMain {
 
         RunSokobanLevels run = new RunSokobanLevels(
             config, agentName, levels,
-            resultFile == null ? null : new File(resultFile), maxFail);
+            resultDir == null ? null : new File(resultDir), maxFail);
         run.run();
     }
 
@@ -69,7 +71,7 @@ public class SokobanMain {
         out.println("  -levelset <name> : set of levels to play");
         out.println("  -maxfail <num> : maximum level failures allowed");
         out.println("  -optimal : require move-optimal solutions");
-        out.println("  -resultfile <filename> : file to append results to");
+        out.println("  -resultdir <path> : directory for results in CSV format");
         out.println("  -timeout <num> : maximum thinking time in milliseconds");
         out.println("  -v : verbose output");
         System.exit(1);
@@ -81,7 +83,7 @@ public class SokobanMain {
         int level = 0;
         int maxFail = 0;
         boolean optimal = false;
-        String resultFile = null;
+        String resultDir = null;
         int timeout = 0;
         boolean verbose = false;
 
@@ -102,8 +104,8 @@ public class SokobanMain {
                 case "-optimal":
                     optimal = true;
                     break;
-                case "-resultfile":
-                    resultFile = args[++i];
+                case "-resultdir":
+                    resultDir = args[++i];
                     break;
                 case "-timeout":
                     timeout = Integer.parseInt(args[++i]);
@@ -127,10 +129,10 @@ public class SokobanMain {
             if (level > 0) {
                 IAgent agent = (IAgent) Class.forName(agentName).getConstructor().newInstance();
                 SokobanResultType resultType = runLevel(
-                    agent, agentName, levelset, level, resultFile, timeout, verbose, optimal);
+                    agent, agentName, levelset, level, resultDir, timeout, verbose, optimal);
                 System.exit(resultType.getExitValue());	    	    
             }
             else
-                runLevelSet(agentName, levelset, maxFail, resultFile, timeout, verbose, optimal);
+                runLevelSet(agentName, levelset, maxFail, resultDir, timeout, verbose, optimal);
     }
 }

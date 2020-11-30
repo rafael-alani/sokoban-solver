@@ -1,26 +1,17 @@
 package game;
 
 import java.io.*;
+import java.time.LocalDateTime;
 
 public class SokobanResult {
 	private String id = null;
-	
 	private IAgent agent = null;
-	
 	private String level = null;
-	
 	private SokobanResultType result = null;
-	
 	private Throwable exception;
-	
 	private int steps = 0;
-	
 	private long simStartMillis = 0, simEndMillis = 0;
-    
     public String message;
-
-	public SokobanResult() {		
-	}
 
 	/**
 	 * Assigned ID given to this simulation.
@@ -104,8 +95,8 @@ public class SokobanResult {
 		return exception;
 	}
 
-	public void setException(Throwable execption) {
-		this.exception = execption;
+	public void setException(Throwable exception) {
+		this.exception = exception;
 	}
 	
 	@Override
@@ -114,30 +105,20 @@ public class SokobanResult {
 	}
     
 	public void outputResult(File resultFile, String levelFile, int level, String agentClassString) {
-		System.out.println("Outputting result: " + toString());
-		FileOutputStream output = null;		
-		boolean header = !resultFile.exists();
-		try {
-			output = new FileOutputStream(resultFile, true);
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Failed to append to the result file: " + resultFile.getAbsolutePath());
-		}
-		try {
-			PrintWriter writer = new PrintWriter(output);
-		
+        boolean header = !resultFile.exists();
+        
+        try (FileOutputStream output = new FileOutputStream(resultFile, true);
+             PrintWriter writer = new PrintWriter(output)) {
 			if (header) {
-				writer.println("id;levelFile;levelNumber;agent;result;steps;playTimeMillis");
+				writer.println("datetime;id;levelFile;levelNumber;result;steps;playTimeMillis");
 			}
-			writer.println(getId() + ";" + levelFile + ";" + level + ";" + agentClassString + ";" + getResult() + ";" + getSteps() + ";" + getSimDurationMillis());
-			
-			writer.flush();
-			writer.close();
-			
-		} finally {
-			try {
-				output.close();
-			} catch (IOException e) {
-			}
-		}		
+            writer.println(LocalDateTime.now() + ";" + getId() + ";" +
+                           new File(levelFile).getName() + ";" + level + ";" +
+                           getResult() + ";" + getSteps() + ";" +
+                           getSimDurationMillis());
+		} catch (IOException e) {
+            throw new RuntimeException("Failed to append to the result file: " +
+                                       resultFile.getAbsolutePath());
+		}
 	}
 }

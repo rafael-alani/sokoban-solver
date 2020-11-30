@@ -17,16 +17,16 @@ import game.*;
 public class RunSokobanLevels {
 	private SokobanLevels levels;
 	private String agentClass;
-	private File resultFile;
+	private File resultDir;
 	private SokobanConfig config;
     private int maxFail;
 	
 	public RunSokobanLevels(SokobanConfig config, String agentClass, SokobanLevels levels,
-			                File resultFile, int maxFail) {
+			                File resultDir, int maxFail) {
 		this.config = config;
 		this.agentClass = agentClass;
 		this.levels = levels;
-		this.resultFile = resultFile;
+		this.resultDir = resultDir;
         this.maxFail = maxFail;
 	}
 
@@ -66,9 +66,9 @@ public class RunSokobanLevels {
             args.add("-level");
             args.add("" + level.levelNumber);
 
-            if (resultFile != null) {
-                args.add("-resultfile");
-                args.add(resultFile.getAbsolutePath());
+            if (resultDir != null) {
+                args.add("-resultdir");
+                args.add(resultDir.getAbsolutePath());
             }
 
             if (config.requireOptimal)
