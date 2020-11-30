@@ -15,30 +15,25 @@ public class SokobanSim implements ISokobanGame, Runnable {
 	// RUNTIME
 	
 	private SokobanGameState state;
-	
 	private IAction agentAction;
-	
 	private boolean observe = true;
-	
-	private boolean shouldRun = true;
+    private boolean shouldRun = true;
+    long startTime;
 	
 	// RESULT
 	
-	private SokobanResult result = new SokobanResult();
+	private SokobanResult result;
 	
 	private int steps = 0;
 	
 	public SokobanSim(SokobanConfig config, Board board) {
 		this.config = config;
-		String id = config.id == null ? "SokobanSim" : config.id;
 		this.board = board;
 		this.agent = config.agent;
 		
 		this.state = SokobanGameState.INIT;
-		
-		result.setId(id);
-		result.setAgent(agent);
-		result.setLevel(board.level == null ? "N/A" : board.level);
+        
+        result = new SokobanResult(config);
 	}
 	
 	@Override
@@ -76,7 +71,7 @@ public class SokobanSim implements ISokobanGame, Runnable {
 	@Override
 	public void run() {
 		try {
-			result.setSimStartMillis(System.currentTimeMillis());
+			startTime = System.currentTimeMillis();
 			
 			try {
 				agent.newLevel();
@@ -90,7 +85,7 @@ public class SokobanSim implements ISokobanGame, Runnable {
 				// TIMEOUT?
 				if (config.timeoutMillis > 0) {
 					long now = System.currentTimeMillis();
-					long timeLeftMillis = config.timeoutMillis - (now - result.getSimStartMillis());
+					long timeLeftMillis = config.timeoutMillis - (now - startTime);
 					if (timeLeftMillis <= 0) {						
 						onTimeout();
 						return;
@@ -144,7 +139,7 @@ public class SokobanSim implements ISokobanGame, Runnable {
 	}
 
     void stopSimulation(SokobanResultType resultType, SokobanGameState endState) {
-		result.setSimEndMillis(System.currentTimeMillis());
+		result.setSimTimeMillis(System.currentTimeMillis() - startTime);
 		result.setResult(resultType);
 		try {
 			agent.stop();
@@ -164,7 +159,7 @@ public class SokobanSim implements ISokobanGame, Runnable {
 	}
 
 	private void onVictory() {
-        result.setSimEndMillis(System.currentTimeMillis());
+        result.setSimTimeMillis(System.currentTimeMillis() - startTime);
 
         SokobanResultType outcome = SokobanResultType.VICTORY;
         if (board.minMoves > 0) {
@@ -176,7 +171,7 @@ public class SokobanSim implements ISokobanGame, Runnable {
                 result.message = String.format(
                     "solution of %d steps exceeded optimal move count of %d",
                     steps, board.minMoves);
-                outcome = SokobanResultType.AGENT_FAILED;
+                outcome = SokobanResultType.NOT_OPTIMAL;
             }
         } else if (config.requireOptimal)
             result.message = "warning: optimal move count is unknown";
@@ -218,18 +213,9 @@ public class SokobanSim implements ISokobanGame, Runnable {
 	}
 
 	@Override
-	public SokobanResult waitFinish() throws InterruptedException {
-		switch (state) {
-		case INIT:
-			return null;
-			
-		case RUNNING:
-			if (gameThread != null && gameThread.isAlive()) this.gameThread.join();
-			return getResult();
-		
-		default:
-			return result;
-		}
+	public void waitFinish() throws InterruptedException {
+        if (state == SokobanGameState.RUNNING && gameThread != null && gameThread.isAlive())
+            gameThread.join();
 	}
 	
 }

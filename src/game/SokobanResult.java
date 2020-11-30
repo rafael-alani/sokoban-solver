@@ -4,14 +4,28 @@ import java.io.*;
 import java.time.LocalDateTime;
 
 public class SokobanResult {
+    LocalDateTime dateTime;
 	private String id = null;
-	private IAgent agent = null;
-	private String level = null;
+    private String levelFile;
+    private int level;
+    private boolean requireOptimal;
 	private SokobanResultType result = null;
 	private Throwable exception;
 	private int steps = 0;
-	private long simStartMillis = 0, simEndMillis = 0;
+	private long simTimeMillis;
     public String message;
+
+    public SokobanResult(SokobanConfig config) {
+        dateTime = LocalDateTime.now();
+        id = config.id;
+        levelFile = config.level.getName();
+        level = config.levelNumber;
+        requireOptimal = config.requireOptimal;
+    }
+
+    public SokobanResult(String line) {
+        parse(line);
+    }
 
 	/**
 	 * Assigned ID given to this simulation.
@@ -24,24 +38,29 @@ public class SokobanResult {
 		this.id = id;
 	}
 
-	/**
-	 * Agent that was running in simulation.
-	 */
-	public IAgent getAgent() {
-		return agent;
-	}
+    public String getLevelFile() {
+        return levelFile;
+    }
 
-	public void setAgent(IAgent agent) {
-		this.agent = agent;
-	}
+    public void setLevelFile(File levelFile) {
+        this.levelFile = levelFile.getName();
+    }
 
-	public String getLevel() {
+	public int getLevel() {
 		return level;
 	}
 
-	public void setLevel(String level) {
+	public void setLevel(int level) {
 		this.level = level;
-	}
+    }
+    
+    public boolean getRequireOptimal() {
+        return requireOptimal;
+    }
+
+    public void setRequireOptimal(boolean optimal) {
+        requireOptimal = optimal;
+    }
 
 	/**
 	 * Result of the simulation.
@@ -68,28 +87,16 @@ public class SokobanResult {
 	/**
 	 * Time the simulation started in milliseconds (obtained via {@link System#currentTimeMillis()}.
 	 */
-	public long getSimStartMillis() {
-		return simStartMillis;
+	public long getSimTimeMillis() {
+		return simTimeMillis;
 	}
 
-	public void setSimStartMillis(long simStartMillis) {
-		this.simStartMillis = simStartMillis;
-	}
-
-	public void setSimEndMillis(long simEndMillis) {
-		this.simEndMillis = simEndMillis;
-	}
-	
-	/**
-	 * How long the simulation run in milliseconds.
-	 */
-	public long getSimDurationMillis() {
-		return simEndMillis - simStartMillis;
+	public void setSimTimeMillis(long simTimeMillis) {
+		this.simTimeMillis = simTimeMillis;
 	}
 
 	/**
 	 * Exception caught during the simulation; 
-	 * filled in case of {@link #getResult()} == {@link SokobanResultType#AGENT_EXCEPTION} or {@link SokobanResultType#SIMULATION_EXCEPTION}.  
 	 */
 	public Throwable getException() {
 		return exception;
@@ -104,21 +111,34 @@ public class SokobanResult {
 		return "SokobanResult[" + getResult() + "]";
 	}
     
-	public void outputResult(File resultFile, String levelFile, int level, String agentClassString) {
+    public void outputResult(File resultFile) {
         boolean header = !resultFile.exists();
         
         try (FileOutputStream output = new FileOutputStream(resultFile, true);
              PrintWriter writer = new PrintWriter(output)) {
 			if (header) {
-				writer.println("datetime;id;levelFile;levelNumber;result;steps;playTimeMillis");
+                writer.println("datetime;id;levelFile;levelNumber;requireOptimal;" +
+                               "result;steps;playTimeMillis");
 			}
-            writer.println(LocalDateTime.now() + ";" + getId() + ";" +
-                           new File(levelFile).getName() + ";" + level + ";" +
-                           getResult() + ";" + getSteps() + ";" +
-                           getSimDurationMillis());
+            writer.println(dateTime + ";" + id + ";" +
+                           levelFile + ";" + level + ";" +
+                           requireOptimal + ";" + result + ";" + steps + ";" +
+                           simTimeMillis);
 		} catch (IOException e) {
             throw new RuntimeException("Failed to append to the result file: " +
                                        resultFile.getAbsolutePath());
 		}
-	}
+    }
+    
+    void parse(String line) {
+        String[] fields = line.split(";");
+        dateTime = LocalDateTime.parse(fields[0]);
+        id = fields[1];
+        levelFile = fields[2];
+        level = Integer.parseInt(fields[3]);
+        requireOptimal = Boolean.parseBoolean(fields[4]);
+        result = SokobanResultType.valueOf(fields[5]);
+        steps = Integer.parseInt(fields[6]);
+        simTimeMillis = Long.parseLong(fields[7]);
+    }
 }

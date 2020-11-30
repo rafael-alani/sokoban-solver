@@ -285,7 +285,7 @@ public class Sokoban {
 		frame.setVisible(true);
 		
 		// START GAME WITH VISUALIZATION
-		runGame(new SokobanVis(config.id, board, config.agent, sprites, uiBoard, view, frame, config.timeoutMillis));
+		runGame(new SokobanVis(config, board, config.agent, sprites, uiBoard, view, frame));
 	}
 	
 	private void runGame(ISokobanGame game) {
@@ -514,23 +514,14 @@ public class Sokoban {
 	// ----------------------
 	
 	/**
-	 * Human will play the first level found within the file on 'levelFilePath'.
-	 * @param levelFilePath path to the level file to load
-	 * @return
-	 */
-	public static SokobanResult playHumanLevel(String levelFilePath) {
-		return playAgentLevel(levelFilePath, new HumanAgent());
-	}
-	
-	/**
 	 * Human will play 'levelNumber' found within the file on 'levelFilePath'.
 	 * 
 	 * @param levelFilePath path to the level file to load
 	 * @param levelNumber level number to be played; 1-based
 	 * @return
 	 */
-	public static SokobanResult playHumanLevel(String levelFilePath, int levelNumber) {
-		return playAgentLevel(levelFilePath, levelNumber, new HumanAgent());
+	public static void playHumanLevel(String levelFilePath, int levelNumber) {
+		playAgentLevel(levelFilePath, levelNumber, new HumanAgent());
 	}
 	
 	/**
@@ -538,7 +529,7 @@ public class Sokoban {
 	 * @param levelFilePath path to the level file to load
 	 * @return
 	 */
-	public static List<SokobanResult> playHumanFile(String levelFilePath) {
-		return playAgentFile(levelFilePath, new HumanAgent());
+	public static void playHumanFile(String levelFilePath) {
+		playAgentFile(levelFilePath, new HumanAgent());
 	}
 }

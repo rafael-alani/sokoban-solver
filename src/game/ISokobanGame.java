@@ -56,6 +56,6 @@ public interface ISokobanGame {
 	 * @return
 	 * @throws InterruptedException 
 	 */
-	public SokobanResult waitFinish() throws InterruptedException;
+	public void waitFinish() throws InterruptedException;
 	
 }

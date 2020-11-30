@@ -25,7 +25,6 @@ public class SokobanVis implements ISokobanGame, Runnable {
 	private UIBoard uiBoard;
 	private SokobanView view;
 	private SokobanFrame frame;
-	private long timeoutMillis;
 	
 	// THREAD
 	
@@ -48,25 +47,20 @@ public class SokobanVis implements ISokobanGame, Runnable {
 	
 	// RESULT
 	
-	private SokobanResult result = new SokobanResult();
+	private SokobanResult result;
 	
-	/**
-	 * @param timeoutMillis negative number or zero == no time; in milliseconds
-	 */
 	public SokobanVis(
-        String id, Board board, IAgent agent, SpriteAtlas sprites, UIBoard uiBoard,
-        SokobanView view, SokobanFrame frame, long timeoutMillis) {
+        SokobanConfig config, Board board, IAgent agent, SpriteAtlas sprites, UIBoard uiBoard,
+        SokobanView view, SokobanFrame frame) {
             
 		// SETUP
 		
-		if (id == null) id = "SokobanVis";		
 		this.board = board;
 		this.agent = agent;
 		this.sprites = sprites;
 		this.uiBoard = uiBoard;
 		this.view = view;
 		this.frame = frame;
-		this.timeoutMillis = timeoutMillis;
 		
 		// RUNTIME
 		
@@ -79,10 +73,8 @@ public class SokobanVis implements ISokobanGame, Runnable {
 		}
 		
 		// RESULT
-		
-		result.setId(id);
-		result.setAgent(agent);
-		result.setLevel(board.level == null ? "N/A" : board.level);
+        
+        result = new SokobanResult(config);
 	}
 	
 	@Override
@@ -142,8 +134,6 @@ public class SokobanVis implements ISokobanGame, Runnable {
 		try {
 			frame.setVisible(true);
 		
-			result.setSimStartMillis(System.currentTimeMillis());
-			
 			try {
 				agent.newLevel();
 			} catch (Exception e) {
@@ -157,17 +147,6 @@ public class SokobanVis implements ISokobanGame, Runnable {
             requestPaint();
             
 			while (shouldRun && !Thread.interrupted()) {
-				if (timeoutMillis > 0) {
-					// TIMEOUT?
-					long timeLeftMillis = timeoutMillis - (System.currentTimeMillis() - result.getSimStartMillis());
-					if (timeLeftMillis <= 0) {						
-						onTimeout();
-						return;
-					}					
-					// UPDATE FRAME					
-					frame.setTimeLeftMillis(timeLeftMillis);
-				}
-				
 				timeDelta.tick();
 				
 				if (uiAction != null) {
@@ -273,7 +252,6 @@ public class SokobanVis implements ISokobanGame, Runnable {
 	}
 
 	private void onSimulationException(Exception e) {
-		result.setSimEndMillis(System.currentTimeMillis());
 		result.setResult(SokobanResultType.SIMULATION_EXCEPTION);
 		result.setException(e);
 		try {
@@ -285,7 +263,6 @@ public class SokobanVis implements ISokobanGame, Runnable {
 	}
 
 	private void onTermination() {
-		result.setSimEndMillis(System.currentTimeMillis());
 		result.setResult(SokobanResultType.TERMINATED);
 		try {
 			agent.stop();
@@ -296,7 +273,6 @@ public class SokobanVis implements ISokobanGame, Runnable {
 	}
 
 	private void onVictory() {
-		result.setSimEndMillis(System.currentTimeMillis());
 		result.setResult(SokobanResultType.VICTORY);
 		try {
 			agent.victory();
@@ -311,20 +287,7 @@ public class SokobanVis implements ISokobanGame, Runnable {
 		}
 	}
 
-	private void onTimeout() {
-		frame.setTimeLeftMillis(0);
-		result.setSimEndMillis(System.currentTimeMillis());		
-		result.setResult(SokobanResultType.TIMEOUT);		
-		try {
-			agent.stop();
-		} catch (Exception e) {						
-		}		
-		shouldRun = false;		
-		state = SokobanGameState.FINISHED;
-	}
-
 	private void onAgentException(Exception e) {
-		result.setSimEndMillis(System.currentTimeMillis());
 		result.setResult(SokobanResultType.AGENT_EXCEPTION);
 		result.setException(e);
 		try {
@@ -347,18 +310,9 @@ public class SokobanVis implements ISokobanGame, Runnable {
 	}
 
 	@Override
-	public SokobanResult waitFinish() throws InterruptedException {
-		switch (state) {
-		case INIT:
-			return null;
-			
-		case RUNNING:
-			if (gameThread != null && gameThread.isAlive()) this.gameThread.join();
-			return getResult();
-		
-		default:
-			return result;
-		}
+	public void waitFinish() throws InterruptedException {
+        if (state == SokobanGameState.RUNNING && gameThread != null && gameThread.isAlive())
+            gameThread.join();
 	}
 	
 }

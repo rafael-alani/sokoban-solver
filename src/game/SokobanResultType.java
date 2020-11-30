@@ -28,7 +28,10 @@ public enum SokobanResultType {
     TERMINATED(4),
     
     /* The agent failed to return a valid solution or legal move. */
-    AGENT_FAILED(5);
+    AGENT_FAILED(5),
+    
+    // An optimal solution was required, and the agent's solution was not optimal.
+    NOT_OPTIMAL(6);
 	
 	private int exitValue;
 

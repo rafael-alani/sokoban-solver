@@ -15,7 +15,6 @@ public class SokobanConfig {
 	 * Sokoban level file or directory to play.
 	 * 
 	 * FILE == play from file.
-	 * DIRECTORY == play all {@link ELevelFormat} recognized files in alphabetic order found in this directory (no directory recursion).
 	 */
 	public File level;
 	

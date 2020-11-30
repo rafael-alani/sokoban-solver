@@ -31,7 +31,7 @@ public class SokobanMain {
 
         SokobanResultType resultType = result.getResult();
         System.out.printf("%s in %.1f ms",
-            describe(resultType), (double) result.getSimDurationMillis());
+            describe(resultType), (double) result.getSimTimeMillis());
 
         if (resultType == SokobanResultType.VICTORY)
             System.out.printf(" (%d steps)", result.getSteps());
@@ -42,7 +42,7 @@ public class SokobanMain {
 
         if (resultDir != null) {
             new File(resultDir).mkdirs();
-            result.outputResult(new File(resultDir, "levels.csv"), levelset, level, agentName);
+            result.outputResult(new File(resultDir, "levels.csv"));
         }
 
         return resultType;
@@ -50,7 +50,6 @@ public class SokobanMain {
 
     static void runLevelSet(String agentName, String levelset, int maxFail, String resultDir,
                             int timeout, boolean verbose, boolean optimal) {
-        SokobanLevels levels = SokobanLevels.fromString(levelset + ";all");
         System.out.printf("Running %s on levels in %s\n", agentName, levelset);
 
         SokobanConfig config = new SokobanConfig();
@@ -59,7 +58,7 @@ public class SokobanMain {
         config.verbose = verbose;
 
         RunSokobanLevels run = new RunSokobanLevels(
-            config, agentName, levels,
+            config, agentName, levelset,
             resultDir == null ? null : new File(resultDir), maxFail);
         run.run();
     }
