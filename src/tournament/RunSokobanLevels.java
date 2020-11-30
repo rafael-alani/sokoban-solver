@@ -96,7 +96,7 @@ public class RunSokobanLevels {
             p.waitFor();
         } catch (Exception e) { throw new Error(e); }
 
-        return p.exitValue() != 0;
+        return p.exitValue() == 0;
     }
 
 	public void run() {
