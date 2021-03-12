@@ -171,7 +171,7 @@ public class BoardCompact implements Cloneable {
 	public void setState(StateMinimal state) {
 		playerX = state.getX(state.positions[0]);
 		playerY = state.getY(state.positions[0]);
-		boxCount = 0;
+		boxInPlaceCount = 0;
 
 		tiles[playerX][playerY] = (tiles[playerX][playerY] & EEntity.NULLIFY_ENTITY_FLAG) | EEntity.PLAYER.getFlag();
 		
