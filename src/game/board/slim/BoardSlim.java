@@ -134,6 +134,10 @@ public class BoardSlim {
 	public boolean isVictory() {
 		return boxCount == boxInPlaceCount;
 	}
+
+	public void nullHash(){
+		this.hash = null;
+	}
 	
 	public void debugPrint() {
 		for (int y = 0; y < height(); ++y) {
