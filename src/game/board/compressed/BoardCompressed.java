@@ -134,6 +134,8 @@ public class BoardCompressed {
 		
 		playerX = targetTileX;
 		playerY = targetTileY;
+
+		// this.hash = null;
 	}
 	
 	public void moveBox(int sourceTileX, int sourceTileY, int targetTileX, int targetTileY) {
@@ -155,6 +157,8 @@ public class BoardCompressed {
 			--boxInPlaceCount;
 		}
 		tiles[stx][sty] &= sourceSubSlimTile.getNullifyEntityFlag();
+
+		// this.hash = null;
 	}
 	
 	/**
@@ -166,6 +170,10 @@ public class BoardCompressed {
 		return boxCount == boxInPlaceCount;
 	}
 	
+	public void nullHash(){
+		this.hash = null;
+	}
+
 	public void debugPrint() {
 		for (int y = 0; y < height(); ++y) {
 			for (int x = 0; x < width(); ++x) {
