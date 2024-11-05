@@ -4,7 +4,7 @@
 results
 target
 sokoban.jar
-
+.DS_Store
 
 # Basic IntelliJ gitignore, copied from https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
 out/
