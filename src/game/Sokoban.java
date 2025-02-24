@@ -168,6 +168,7 @@ public class Sokoban {
 	
 	private void runFile() {
 		// RUN ALL LEVELS WITHIN ONE FILE
+
 		if (config.levelNumber >= 1) {
 			// run particular level
 			runLevel();				
@@ -339,8 +340,8 @@ public class Sokoban {
             throw new RuntimeException("Not a level file at '" + config.levelFile.getAbsolutePath() +
                                        "'\nResolved from: " + levelFilePath);
         config.levelFormat = determineLevelFormat(config.levelFile.getName());
-		config.levelNumber = levelNumber;		
-		config.visualization = false;
+		config.levelNumber = levelNumber;
+		config.visualization = true;
         config.timeoutMillis = timeoutMillis;
         config.verbose = verbose;
         config.requireOptimal = optimal;
@@ -375,7 +376,7 @@ public class Sokoban {
 			throw new RuntimeException("Not a level file at '" + config.levelFile.getAbsolutePath() + "'\nResolved from: " + levelFilePath);
 		if (levelFormat == null) levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelFormat = levelFormat;
-		config.levelNumber = levelNumber;		
+		config.levelNumber = levelNumber;
 		config.visualization = true;
 		config.timeoutMillis = timeoutMillis;
 		
