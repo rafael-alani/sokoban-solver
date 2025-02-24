@@ -57,7 +57,6 @@ public class SokobanMain {
         config.requireOptimal = optimal;
         config.timeoutMillis = timeout;
         config.verbose = verbose;
-        config.visualization = true;
 
         RunSokobanLevels run = new RunSokobanLevels(
             config, className, levelset,

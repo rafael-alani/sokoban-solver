@@ -377,7 +377,6 @@ public class Sokoban {
 		if (levelFormat == null) levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelFormat = levelFormat;
 		config.levelNumber = levelNumber;
-		config.visualization = true;
 		config.timeoutMillis = timeoutMillis;
 		
 		return runAgentLevel(config);
@@ -422,7 +421,6 @@ public class Sokoban {
 			throw new RuntimeException("Not a level file at '" + config.levelFile.getAbsolutePath() + "'\nResolved from: " + levelFilePath);
 		if (levelFormat == null) levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelFormat = levelFormat;
-		config.visualization = true;
 		config.timeoutMillis = timeoutMillis;
 		
 		return runAgentLevels(config);

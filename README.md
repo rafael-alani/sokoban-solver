@@ -2,6 +2,14 @@
 
 ![alt tag](https://github.com/kefik/Sokoban4J/raw/master/Sokoban4J/screenshot.png)
 
+## Changes
+
+### Added visualization
+to do so look for `config.visualization = true;` and comment it out
+as the ./sokoban script makes the program allways run with the precompiled jars if they exist,
+run `javac -d target/classes -cp "libs/*" src/**/*.java` in the terminal after commenting in our out anything
+from the library classes, such as config.visualization.
+
 ## Overview
 
 This is an implementation of the puzzle game [Sokoban](https://en.wikipedia.org/wiki/Sokoban) in Java (using Swing).  It is fully playable from the keyboard, but truly intended for programmers who want to develop Sokoban-playing agents in Java.
