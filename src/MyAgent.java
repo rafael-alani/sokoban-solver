@@ -35,6 +35,54 @@ public class MyAgent extends ArtificialAgent {
 		return result.isEmpty() ? null : result;
 	}
 
+
+public class SokobanProblem <BoardCompact,CAction> implements HeuristicProblem<BoardCompact, CAction>{
+
+	@Override
+	public double estimate(BoardCompact state) {
+		// We can start with mannhatan distance estimation
+	}
+
+	@Override
+	public BoardCompact initialState() {
+		return null;
+	}
+
+	@Override
+	public List<CAction> actions(BoardCompact state) {
+//		List<CAction> actions = new ArrayList<CAction>(4);
+//		for (CMove move : CMove.getActions()) {
+//			if (move.isPossible(board)) {
+//				actions.add(move);
+//			}
+//		}
+//		for (CPush push : CPush.getActions()) {
+//			if (push.isPossible(board)) {
+//				actions.add(push);
+//			}
+//		}
+
+		return List.of();
+	}
+
+	@Override
+	public BoardCompact result(BoardCompact state, CAction action) {
+		return null;
+	}
+
+	@Override
+	public boolean isGoal(BoardCompact state) {
+		return false;
+	}
+
+	@Override
+	public double cost(BoardCompact state, CAction action) {
+		return 0;
+	}
+}
+
+
+
 	private boolean dfs(int level, List<EDirection> result) {
 		if (level <= 0) return false; // DEPTH-LIMITED
 		
