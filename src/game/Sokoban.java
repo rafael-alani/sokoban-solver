@@ -341,7 +341,7 @@ public class Sokoban {
                                        "'\nResolved from: " + levelFilePath);
         config.levelFormat = determineLevelFormat(config.levelFile.getName());
 		config.levelNumber = levelNumber;
-		config.visualization = true;
+		config.visualization = false;
         config.timeoutMillis = timeoutMillis;
         config.verbose = verbose;
         config.requireOptimal = optimal;

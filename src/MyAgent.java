@@ -1,8 +1,6 @@
 import static java.lang.System.out;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 
 import agents.ArtificialAgent;
 import game.actions.EDirection;
@@ -28,22 +26,16 @@ public class MyAgent extends ArtificialAgent {
 		long searchStartMillis = System.currentTimeMillis();
 
 		SokobanProblem problem = new SokobanProblem();
-		List<EDirection> result = null;
-		try {
-			result = mctsSearch(board, 500);
-		} catch (Exception e) {
-			if (verbose) {
-				out.println("MCTS failed, falling back to DFS: " + e.getMessage());
+		Solution<BoardCompact, CAction> solution = AStar.search(problem);
+		
+		List<EDirection> result = new ArrayList<>();
+		if (solution != null && !solution.actions.isEmpty()) {
+			for (CAction action : solution.actions) {
+				result.add(action.getDirection());
 			}
 		}
 
-		// if (result == null || result.isEmpty()) {
-		// result = new ArrayList<EDirection>();
-		// dfs(20, result);
-		// }
-
 		long searchTime = System.currentTimeMillis() - searchStartMillis;
-
 		if (verbose) {
 			out.println("Nodes visited: " + searchedNodes);
 			out.printf("Performance: %.1f nodes/sec\n",
