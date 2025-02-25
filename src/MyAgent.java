@@ -26,7 +26,7 @@ public class MyAgent extends ArtificialAgent {
 		long searchStartMillis = System.currentTimeMillis();
 
 		SokobanProblem problem = new SokobanProblem();
-		Solution<BoardCompact, CAction> solution = AStar.search(problem);
+		Solution2<BoardCompact, CAction> solution = AStar.search(problem);
 		
 		List<EDirection> result = new ArrayList<>();
 		if (solution != null && !solution.actions.isEmpty()) {
