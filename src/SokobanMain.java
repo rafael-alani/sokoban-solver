@@ -132,7 +132,6 @@ public class SokobanMain {
                 Sokoban.playHumanFile(levelset);
         else
             if (level > 0) {
-                System.out.println("hi");
                 IAgent agent = (IAgent) Class.forName(className).getConstructor().newInstance();
                 SokobanResultType resultType = runLevel(
                     agent, agentId, levelset, level, resultDir, timeout, verbose, optimal);
