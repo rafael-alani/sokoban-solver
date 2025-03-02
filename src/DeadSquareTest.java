@@ -3,6 +3,7 @@ import java.util.*;
 
 import game.board.compact.*;
 import game.board.oop.*;
+
 public class DeadSquareTest {
     static void printLevelWithTargets(Board board) {
         for (int y = 0; y < board.height; ++y) {
@@ -12,8 +13,7 @@ public class DeadSquareTest {
 
                 if (place == EPlace.BOX_1) {
                     System.out.print('.');
-                } else
-                if (space != null) {
+                } else if (space != null) {
                     System.out.print(space.getSymbol());
                 } else {
                     System.out.print("?");
@@ -31,7 +31,7 @@ public class DeadSquareTest {
         }
 
         System.out.printf("testing levels in %s\n\n", levels.getName());
-        for (int i = 1 ; i <= 10 ; ++i) {
+        for (int i = 1; i <= 10; ++i) {
             System.out.printf("== level %d ==\n\n", i);
             Board board = Board.fromFileSok(levels, i);
 
@@ -43,8 +43,8 @@ public class DeadSquareTest {
             boolean[][] dead = DeadSquareDetector.detect(bc);
 
             System.out.println("dead squares: \n");
-            for (int y = 0 ; y < bc.height() ; ++y) {
-                for (int x = 0 ; x < bc.width() ; ++x)
+            for (int y = 0; y < bc.height(); ++y) {
+                for (int x = 0; x < bc.width(); ++x)
                     System.out.print(CTile.isWall(bc.tile(x, y)) ? '#' : (dead[x][y] ? 'X' : '_'));
                 System.out.println();
             }
@@ -52,4 +52,3 @@ public class DeadSquareTest {
         }
     }
 }
-

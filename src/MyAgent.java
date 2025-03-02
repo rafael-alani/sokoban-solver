@@ -27,7 +27,7 @@ public class MyAgent extends ArtificialAgent {
 
 		SokobanProblem problem = new SokobanProblem();
 		Solution2<BoardCompact, CAction> solution = AStar.search(problem);
-		
+
 		List<EDirection> result = new ArrayList<>();
 		if (solution != null && !solution.actions.isEmpty()) {
 			for (CAction action : solution.actions) {
@@ -45,62 +45,88 @@ public class MyAgent extends ArtificialAgent {
 		return result.isEmpty() ? null : result;
 	}
 
-	public  List<EDirection> mctsSearch (BoardCompact state, int iterations) {
-		return List.of();
-	}
-	private class MCTSNode {
-		MCTSNode parent;
-		CAction action;
-		BoardCompact state;
-		List<MCTSNode> children;
-		int visits;
-		double totalValue;
-		double alpha;
-		double beta;
-
-		MCTSNode(MCTSNode parent, CAction action, BoardCompact state) {
-			this.parent = parent;
-			this.action = action;
-			this.state = state;
-			this.children = new ArrayList<>();
-			this.visits = 0;
-			this.totalValue = 0;
-			this.alpha = Double.NEGATIVE_INFINITY;
-			this.beta = Double.POSITIVE_INFINITY;
-		}
-
-		boolean isLeaf() {
-			return children.isEmpty();
-		}
-	}
-
 	public class SokobanProblem implements HeuristicProblem<BoardCompact, CAction> {
 
 		@Override
 		public double estimate(BoardCompact state) {
 			double totalEstimate = 0;
 
-			// there is no information about the location of the boxes, their colors or the
-			// location of the drop-off points on the BoardCompact class
-			// maybe out of speed concerns, but I feel like keeping the state on those in
-			// this class and calling that function on init should be faster
-			// 4 nested fors for now xDD
+			boolean[][] deadSquares = DeadSquareDetector.detect(state);
+
+			// IGNORE THE COLOR OF THE BOXES, only loses speed
+			// tried keeping a map of the closes box and hole in state and update but slower
+			List<int[]> goals = new ArrayList<>();
+			for (int x = 0; x < state.width(); x++) {
+				for (int y = 0; y < state.height(); y++) {
+					if (CTile.forSomeBox(state.tile(x, y))) {
+						goals.add(new int[] { x, y });
+					}
+				}
+			}
+
+			// maybe keep track of assigned goals?
 			for (int x = 0; x < state.width(); x++) {
 				for (int y = 0; y < state.height(); y++) {
 					if (CTile.isSomeBox(state.tile(x, y))) {
+
+						// box is fucked
+						if (deadSquares[x][y] && !CTile.forSomeBox(state.tile(x, y))) {
+							totalEstimate += 500; // play with this, to get best result
+							continue;
+						}
+
+						// manhatan but walls are hevily penilised
 						double minDistance = Double.MAX_VALUE;
-						for (int dx = 0; dx < state.width(); dx++) {
-							for (int dy = 0; dy < state.height(); dy++) {
-								if (CTile.forSomeBox(state.tile(dx, dy))) {
-									double distance = Math.abs(x - dx) + Math.abs(y - dy);
-									minDistance = Math.min(minDistance, distance);
-								}
-							}
+						for (int[] goal : goals) {
+							double distance = Math.abs(x - goal[0]) + Math.abs(y - goal[1]);
+
+							// if (x != goal[0]) { // If we need horizontal movement
+							// int startX = Math.min(x, goal[0]) + 1;
+							// int endX = Math.max(x, goal[0]);
+							// for (int px = startX; px < endX; px++) {
+							// if (CTile.isWall(state.tile(px, y))) {
+							// distance += 10;
+							// }
+							// }
+							// }
+
+							// if (y != goal[1]) {
+							// int startY = Math.min(y, goal[1]) + 1;
+							// int endY = Math.max(y, goal[1]);
+							// for (int py = startY; py < endY; py++) {
+							// if (CTile.isWall(state.tile(x, py))) {
+							// distance += 10;
+							// }
+							// }
+							// }
+
+							minDistance = Math.min(minDistance, distance);
 						}
 						totalEstimate += minDistance;
 					}
 				}
 			}
+
+			// // Add small penalty for player distance to nearest box not on goal
+			// int playerX = state.playerX;
+			// int playerY = state.playerY;
+			// double minPlayerDist = Double.MAX_VALUE;
+
+			// // Only consider boxes not on goals
+			// for (int x = 0; x < state.width(); x++) {
+			// for (int y = 0; y < state.height(); y++) {
+			// if (CTile.isSomeBox(state.tile(x, y)) && !CTile.forSomeBox(state.tile(x, y)))
+			// {
+			// double dist = Math.abs(playerX - x) + Math.abs(playerY - y);
+			// minPlayerDist = Math.min(minPlayerDist, dist);
+			// }
+			// }
+			// }
+
+			// if (minPlayerDist != Double.MAX_VALUE) {
+			// totalEstimate += minPlayerDist * 0.5;
+			// }
+
 			return totalEstimate;
 		}
 
