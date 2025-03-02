@@ -76,6 +76,7 @@ public class MyAgent extends ArtificialAgent {
 						}
 
 						// manhatan but walls are hevily penilised
+						// honestly can be removed, does nothing
 						double minDistance = Double.MAX_VALUE;
 						for (int[] goal : goals) {
 							double distance = Math.abs(x - goal[0]) + Math.abs(y - goal[1]);
