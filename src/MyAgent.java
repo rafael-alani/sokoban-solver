@@ -71,7 +71,7 @@ public class MyAgent extends ArtificialAgent {
 
 						// box is fucked
 						if (deadSquares[x][y] && !CTile.forSomeBox(state.tile(x, y))) {
-							totalEstimate += 500; // play with this, to get best result
+							totalEstimate += 300; // play with this, to get best result
 							continue;
 						}
 
@@ -80,25 +80,25 @@ public class MyAgent extends ArtificialAgent {
 						for (int[] goal : goals) {
 							double distance = Math.abs(x - goal[0]) + Math.abs(y - goal[1]);
 
-							// if (x != goal[0]) { // If we need horizontal movement
-							// int startX = Math.min(x, goal[0]) + 1;
-							// int endX = Math.max(x, goal[0]);
-							// for (int px = startX; px < endX; px++) {
-							// if (CTile.isWall(state.tile(px, y))) {
-							// distance += 10;
-							// }
-							// }
-							// }
+							if (x != goal[0]) { // If we need horizontal movement
+								int startX = Math.min(x, goal[0]) + 1;
+								int endX = Math.max(x, goal[0]);
+								for (int px = startX; px < endX; px++) {
+									if (CTile.isWall(state.tile(px, y))) {
+										distance += 10;
+									}
+								}
+							}
 
-							// if (y != goal[1]) {
-							// int startY = Math.min(y, goal[1]) + 1;
-							// int endY = Math.max(y, goal[1]);
-							// for (int py = startY; py < endY; py++) {
-							// if (CTile.isWall(state.tile(x, py))) {
-							// distance += 10;
-							// }
-							// }
-							// }
+							if (y != goal[1]) {
+								int startY = Math.min(y, goal[1]) + 1;
+								int endY = Math.max(y, goal[1]);
+								for (int py = startY; py < endY; py++) {
+									if (CTile.isWall(state.tile(x, py))) {
+										distance += 10;
+									}
+								}
+							}
 
 							minDistance = Math.min(minDistance, distance);
 						}
@@ -106,27 +106,6 @@ public class MyAgent extends ArtificialAgent {
 					}
 				}
 			}
-
-			// // Add small penalty for player distance to nearest box not on goal
-			// int playerX = state.playerX;
-			// int playerY = state.playerY;
-			// double minPlayerDist = Double.MAX_VALUE;
-
-			// // Only consider boxes not on goals
-			// for (int x = 0; x < state.width(); x++) {
-			// for (int y = 0; y < state.height(); y++) {
-			// if (CTile.isSomeBox(state.tile(x, y)) && !CTile.forSomeBox(state.tile(x, y)))
-			// {
-			// double dist = Math.abs(playerX - x) + Math.abs(playerY - y);
-			// minPlayerDist = Math.min(minPlayerDist, dist);
-			// }
-			// }
-			// }
-
-			// if (minPlayerDist != Double.MAX_VALUE) {
-			// totalEstimate += minPlayerDist * 0.5;
-			// }
-
 			return totalEstimate;
 		}
 
