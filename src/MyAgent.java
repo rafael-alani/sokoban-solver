@@ -8,7 +8,6 @@ import game.actions.compact.*;
 import game.board.compact.BoardCompact;
 
 import game.board.compact.CTile;
-import search.*;
 
 /**
  * The simplest Tree-DFS agent.
