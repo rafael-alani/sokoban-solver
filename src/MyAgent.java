@@ -46,13 +46,17 @@ public class MyAgent extends ArtificialAgent {
 	}
 
 	public class SokobanProblem implements HeuristicProblem<BoardCompact, CAction> {
+		boolean[][] deadSquares;
+
+		// public SokobanProblem(BoardCompact board) {
+		// this.deadSquares = DeadSquareDetector.detect(board);
+		// }
 
 		@Override
 		public double estimate(BoardCompact state) {
 			double totalEstimate = 0;
 
-			boolean[][] deadSquares = DeadSquareDetector.detect(state);
-
+			boolean[][] deadSquares = DeadSquareDetector.detect(board);
 			// IGNORE THE COLOR OF THE BOXES, only loses speed
 			// tried keeping a map of the closes box and hole in state and update but slower
 			List<int[]> goals = new ArrayList<>();
@@ -64,7 +68,7 @@ public class MyAgent extends ArtificialAgent {
 				}
 			}
 
-			// maybe keep track of assigned goals?
+			// // maybe keep track of assigned goals?
 			for (int x = 0; x < state.width(); x++) {
 				for (int y = 0; y < state.height(); y++) {
 					if (CTile.isSomeBox(state.tile(x, y))) {
@@ -74,6 +78,10 @@ public class MyAgent extends ArtificialAgent {
 							totalEstimate += 300; // play with this, to get best result
 							continue;
 						}
+
+						// }
+						// }
+						// }
 
 						// manhatan but walls are hevily penilised
 						// honestly can be removed, does nothing
@@ -146,7 +154,7 @@ public class MyAgent extends ArtificialAgent {
 
 		@Override
 		public double cost(BoardCompact state, CAction action) {
-			return (action instanceof CPush) ? 2.0 : 1.0;
+			return (action instanceof CPush) ? 1.1 : 1.0;
 		}
 	}
 }
