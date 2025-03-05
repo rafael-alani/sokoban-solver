@@ -27,11 +27,10 @@ public class MyAgent extends ArtificialAgent {
 		this.compactBoard = compactBoard;
 		// this.deadSquares = DeadSquareDetector.detect(this.compactBoard);
 		// Only convert to slim once at the start
-		if (this.firstIteration) {
-			BoardSlim initialBoard = convertToSlim(compactBoard);
-			this.board = initialBoard;
-			this.firstIteration = false;
-		}
+		// if (this.firstIteration) {
+		this.board = compactBoard.makeBoardSlim();
+		// this.firstIteration = false;
+		// }
 
 		this.deadSquares = DeadSquareDetector.detect(this.board);
 
@@ -159,7 +158,7 @@ public class MyAgent extends ArtificialAgent {
 			// Create new state through BoardSlim operations only
 			BoardSlim newState = state.clone();
 			action.perform(newState);
-			newState.nullHash(); // Ensure hash is recomputed when needed
+			newState.nullHash(); // Must invalidate hash after moving pieces
 			return newState;
 		}
 
@@ -174,51 +173,52 @@ public class MyAgent extends ArtificialAgent {
 		}
 	}
 
-	/**
-	 * Convert from BoardCompact to BoardSlim. This should only be called once at
-	 * the start.
-	 */
-	private BoardSlim convertToSlim(BoardCompact compact) {
-		BoardSlim slim = new BoardSlim((byte) compact.width(), (byte) compact.height());
+	// /**
+	// * Convert from BoardCompact to BoardSlim. This should only be called once at
+	// * the start.
+	// */
+	// private BoardSlim convertToSlim(BoardCompact compact) {
+	// BoardSlim slim = new BoardSlim((byte) compact.width(), (byte)
+	// compact.height());
 
-		slim.boxCount = 0;
-		slim.boxInPlaceCount = 0;
-		for (int x = 0; x < compact.width(); x++) {
-			for (int y = 0; y < compact.height(); y++) {
-				byte tile = 0;
+	// slim.boxCount = 0;
+	// slim.boxInPlaceCount = 0;
+	// for (int x = 0; x < compact.width(); x++) {
+	// for (int y = 0; y < compact.height(); y++) {
+	// byte tile = 0;
 
-				// Convert tiles
-				if (CTile.isWall(compact.tile(x, y))) {
-					tile |= STile.WALL_FLAG;
-				}
-				if (CTile.isSomeBox(compact.tile(x, y))) {
-					tile |= STile.BOX_FLAG;
-				}
-				if (CTile.forSomeBox(compact.tile(x, y))) {
-					tile |= STile.PLACE_FLAG;
-				}
-				if (CTile.isPlayer(compact.tile(x, y))) {
-					tile |= STile.PLAYER_FLAG;
-					slim.playerX = (byte) x;
-					slim.playerY = (byte) y;
-				}
+	// // Convert tiles
+	// if (CTile.isWall(compact.tile(x, y))) {
+	// tile |= STile.WALL_FLAG;
+	// }
+	// if (CTile.isSomeBox(compact.tile(x, y))) {
+	// tile |= STile.BOX_FLAG;
+	// }
+	// if (CTile.forSomeBox(compact.tile(x, y))) {
+	// tile |= STile.PLACE_FLAG;
+	// }
+	// if (CTile.isPlayer(compact.tile(x, y))) {
+	// tile |= STile.PLAYER_FLAG;
+	// slim.playerX = (byte) x;
+	// slim.playerY = (byte) y;
+	// }
 
-				slim.tiles[x][y] = tile;
-			}
-		}
+	// slim.tiles[x][y] = tile;
+	// }
+	// }
 
-		// Update box counts in one pass
-		for (int x = 0; x < slim.width(); x++) {
-			for (int y = 0; y < slim.height(); y++) {
-				if (STile.isBox(slim.tile(x, y))) {
-					slim.boxCount++;
-					if (STile.forBox(slim.tile(x, y))) {
-						slim.boxInPlaceCount++;
-					}
-				}
-			}
-		}
+	// // Update box counts in one pass
+	// for (int x = 0; x < slim.width(); x++) {
+	// for (int y = 0; y < slim.height(); y++) {
+	// if (STile.isBox(slim.tile(x, y))) {
+	// slim.boxCount++;
+	// if (STile.forBox(slim.tile(x, y))) {
+	// slim.boxInPlaceCount++;
+	// }
+	// }
+	// }
+	// }
 
-		return slim;
-	}
+	// return slim;
+	// }
 }
