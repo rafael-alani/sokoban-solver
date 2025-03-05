@@ -1,3 +1,5 @@
+import game.board.compact.BoardCompact;
+import game.board.compact.CTile;
 import game.board.slim.BoardSlim;
 import game.board.slim.STile;
 
@@ -15,65 +17,123 @@ public class DeadSquareDetector {
         }
     }
 
-    // Our cute BFS approach
-    // We will spread aliveness so basically anything that the box can be pushed
-    // from to the goal state is alive
-    // See if our player can pull the box from the cell or not
-    public static boolean[][] detect(BoardSlim state) {
-        byte w = state.width();
-        byte h = state.height();
+    public static boolean[][] detect(BoardCompact state) {
+        int w = state.width();
+        int h = state.height();
         boolean[][] live = new boolean[w][h];
         boolean[][] dead = new boolean[w][h];
         Queue<Point> queue = new LinkedList<>();
 
-        // Initialize: add all goal cells (cells with PLACE_FLAG) to the queue
-        for (byte x = 0; x < w; x++) {
-            for (byte y = 0; y < h; y++) {
-                if (STile.forBox(state.tile(x, y))) {
+        // Initialize: add all goal cells (cells with a goal marker) to the queue.
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                if (CTile.forSomeBox(state.tile(x, y))) {
                     live[x][y] = true;
                     queue.add(new Point(x, y));
                 }
             }
         }
 
-        // Directions representing up, down, left, right
-        byte[][] directions = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+        // Directions representing up, down, left, right.
+        int[][] directions = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
 
-        // Reverse BFS: try to "pull" the box back from live cells
+        // Reverse BFS: try to "pull" the stone back from live cells.
         while (!queue.isEmpty()) {
             Point current = queue.poll();
-            for (byte[] d : directions) {
-                byte ax = (byte) (current.x - d[0]);
-                byte ay = (byte) (current.y - d[1]);
-                byte px = (byte) (ax - d[0]);
-                byte py = (byte) (ay - d[1]);
+            for (int[] d : directions) {
+                int ax = current.x - d[0];
+                int ay = current.y - d[1];
+                int px = ax - d[0];
+                int py = ay - d[1];
 
-                // Check bounds for both cells
+                // Check bounds for both the candidate stone cell and player cell.
                 if (ax < 0 || ax >= w || ay < 0 || ay >= h)
                     continue;
                 if (px < 0 || px >= w || py < 0 || py >= h)
                     continue;
 
-                // Check if both cells are not walls and box position is not already live
-                byte axTile = state.tile(ax, ay);
-                byte pxTile = state.tile(px, py);
-                if (!STile.isWall(axTile) && !STile.isWall(pxTile) && !live[ax][ay]) {
+                // Only mark as live if both the candidate stone cell and player cell are not
+                // walls.
+                if (!CTile.isWall(state.tile(ax, ay)) &&
+                        !CTile.isWall(state.tile(px, py)) &&
+                        !live[ax][ay]) {
                     live[ax][ay] = true;
                     queue.add(new Point(ax, ay));
                 }
             }
         }
 
-        // All non-wall cells not marked as live are dead positions
-        for (byte x = 0; x < w; x++) {
-            for (byte y = 0; y < h; y++) {
-                if (!STile.isWall(state.tile(x, y)) && !live[x][y]) {
+        // All non-wall cells not marked as live are dead positions.
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                if (!CTile.isWall(state.tile(x, y)) && !live[x][y]) {
                     dead[x][y] = true;
                 }
             }
         }
         return dead;
     }
+
+    // // Our cute BFS approach
+    // // We will spread aliveness so basically anything that the box can be pushed
+    // // from to the goal state is alive
+    // // See if our player can pull the box from the cell or not
+    // public static boolean[][] detect(BoardSlim state) {
+    // byte w = state.width();
+    // byte h = state.height();
+    // boolean[][] live = new boolean[w][h];
+    // boolean[][] dead = new boolean[w][h];
+    // Queue<Point> queue = new LinkedList<>();
+
+    // // Initialize: add all goal cells (cells with PLACE_FLAG) to the queue
+    // for (byte x = 0; x < w; x++) {
+    // for (byte y = 0; y < h; y++) {
+    // if (STile.forBox(state.tile(x, y))) {
+    // live[x][y] = true;
+    // queue.add(new Point(x, y));
+    // }
+    // }
+    // }
+
+    // // Directions representing up, down, left, right
+    // byte[][] directions = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+
+    // // Reverse BFS: try to "pull" the box back from live cells
+    // while (!queue.isEmpty()) {
+    // Point current = queue.poll();
+    // for (byte[] d : directions) {
+    // byte ax = (byte) (current.x - d[0]);
+    // byte ay = (byte) (current.y - d[1]);
+    // byte px = (byte) (ax - d[0]);
+    // byte py = (byte) (ay - d[1]);
+
+    // // Check bounds for both the candidate stone cell and player cell.
+    // if (ax < 0 || ax >= w || ay < 0 || ay >= h)
+    // continue;
+    // if (px < 0 || px >= w || py < 0 || py >= h)
+    // continue;
+
+    // // Only mark as live if both the candidate stone cell and player cell are not
+    // // walls.
+    // byte axTile = state.tile(ax, ay);
+    // byte pxTile = state.tile(px, py);
+    // if (!STile.isWall(axTile) && !STile.isWall(pxTile) && !live[ax][ay]) {
+    // live[ax][ay] = true;
+    // queue.add(new Point(ax, ay));
+    // }
+    // }
+    // }
+
+    // // All non-wall cells not marked as live are dead positions
+    // for (byte x = 0; x < w; x++) {
+    // for (byte y = 0; y < h; y++) {
+    // if (!STile.isWall(state.tile(x, y)) && !live[x][y]) {
+    // dead[x][y] = true;
+    // }
+    // }
+    // }
+    // return dead;
+    // }
     // public static boolean[][] detect(BoardCompact state) {
     // // What we do here is to focus on lines between two walls, first in y then in
     // x

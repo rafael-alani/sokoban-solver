@@ -32,7 +32,7 @@ public class MyAgent extends ArtificialAgent {
 		// this.firstIteration = false;
 		// }
 
-		this.deadSquares = DeadSquareDetector.detect(this.board);
+		this.deadSquares = DeadSquareDetector.detect(compactBoard);
 
 		searchedNodes = 0;
 		long searchStartMillis = System.currentTimeMillis();
@@ -132,7 +132,6 @@ public class MyAgent extends ArtificialAgent {
 
 		@Override
 		public BoardSlim initialState() {
-			// Use the initial board state that was converted once
 			return board;
 		}
 
@@ -155,10 +154,10 @@ public class MyAgent extends ArtificialAgent {
 
 		@Override
 		public BoardSlim result(BoardSlim state, SAction action) {
-			// Create new state through BoardSlim operations only
 			BoardSlim newState = state.clone();
 			action.perform(newState);
-			newState.nullHash(); // Must invalidate hash after moving pieces
+			newState.nullHash(); // without this it's super slow, care to explain? looked into SlimBoard
+			// and it didn't look like the hash state is every used?
 			return newState;
 		}
 
