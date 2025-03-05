@@ -17,12 +17,14 @@ import game.board.compact.CTile;
 public class MyAgent extends ArtificialAgent {
 	protected BoardCompact board;
 	protected int searchedNodes;
+	protected boolean[][] deadSquares;
 
 	@Override
 	protected List<EDirection> think(BoardCompact board) {
 		this.board = board;
 		searchedNodes = 0;
 		long searchStartMillis = System.currentTimeMillis();
+		deadSquares = DeadSquareDetector.detect(board);
 
 		SokobanProblem problem = new SokobanProblem();
 		Solution2<BoardCompact, CAction> solution = AStar.search(problem);
@@ -45,17 +47,10 @@ public class MyAgent extends ArtificialAgent {
 	}
 
 	public class SokobanProblem implements HeuristicProblem<BoardCompact, CAction> {
-		boolean[][] deadSquares;
-
-		// public SokobanProblem(BoardCompact board) {
-		// this.deadSquares = DeadSquareDetector.detect(board);
-		// }
-
 		@Override
 		public double estimate(BoardCompact state) {
 			double totalEstimate = 0;
-
-			boolean[][] deadSquares = DeadSquareDetector.detect(board);
+			boolean[][] deadSquares = MyAgent.this.deadSquares;
 			// IGNORE THE COLOR OF THE BOXES, only loses speed
 			// tried keeping a map of the closes box and hole in state and update but slower
 			List<int[]> goals = new ArrayList<>();
@@ -71,43 +66,17 @@ public class MyAgent extends ArtificialAgent {
 			for (int x = 0; x < state.width(); x++) {
 				for (int y = 0; y < state.height(); y++) {
 					if (CTile.isSomeBox(state.tile(x, y))) {
-
 						// box is fucked
 						if (deadSquares[x][y] && !CTile.forSomeBox(state.tile(x, y))) {
 							totalEstimate += 300; // play with this, to get best result
 							continue;
 						}
 
-						// }
-						// }
-						// }
-
 						// manhatan but walls are hevily penilised
 						// honestly can be removed, does nothing
 						double minDistance = Double.MAX_VALUE;
 						for (int[] goal : goals) {
 							double distance = Math.abs(x - goal[0]) + Math.abs(y - goal[1]);
-
-							if (x != goal[0]) { // If we need horizontal movement
-								int startX = Math.min(x, goal[0]) + 1;
-								int endX = Math.max(x, goal[0]);
-								for (int px = startX; px < endX; px++) {
-									if (CTile.isWall(state.tile(px, y))) {
-										distance += 10;
-									}
-								}
-							}
-
-							if (y != goal[1]) {
-								int startY = Math.min(y, goal[1]) + 1;
-								int endY = Math.max(y, goal[1]);
-								for (int py = startY; py < endY; py++) {
-									if (CTile.isWall(state.tile(x, py))) {
-										distance += 10;
-									}
-								}
-							}
-
 							minDistance = Math.min(minDistance, distance);
 						}
 						totalEstimate += minDistance;

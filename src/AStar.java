@@ -1,8 +1,11 @@
-//import search.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
 
-import java.util.*;
 interface HeuristicProblem<S, A> extends Problem<S, A> {
-    double estimate(S state);  // optimistic estimate of cost from state to goal
+    double estimate(S state); // optimistic estimate of cost from state to goal
 }
 
 // S = state type, A = action type
@@ -18,23 +21,26 @@ interface Problem<S, A> {
     double cost(S state, A action);
 }
 
-class Tuple<S,A>{
+class Tuple<S, A> {
     public S state;
     public A action;
     public double cost;
 
-    public Tuple(S a, A b){
+    public Tuple(S a, A b) {
         this.state = a;
         this.action = b;
     }
 }
+
 class Solution2<S, A> {
-    public List<A> actions;  // series of actions from start state to goal state
-    public S goalState;      // goal state that was reached
-    public double pathCost;  // total cost from start state to goal
+    public List<A> actions; // series of actions from start state to goal state
+    public S goalState; // goal state that was reached
+    public double pathCost; // total cost from start state to goal
 
     public Solution2(List<A> actions, S goalState, double pathCost) {
-        this.actions = actions; this.goalState = goalState; this.pathCost = pathCost;
+        this.actions = actions;
+        this.goalState = goalState;
+        this.pathCost = pathCost;
     }
 
     // Return true if this is a valid solution to the given problem.
@@ -42,7 +48,8 @@ class Solution2<S, A> {
         S state = prob.initialState();
         double cost = 0.0;
 
-        // Check that the actions actually lead from the problem's initial state to the goal.
+        // Check that the actions actually lead from the problem's initial state to the
+        // goal.
         for (A action : actions) {
             cost += prob.cost(state, action);
             state = prob.result(state, action);
@@ -50,29 +57,14 @@ class Solution2<S, A> {
 
         return state.equals(goalState) && prob.isGoal(goalState) && pathCost == cost;
     }
-
-    // Describe a solution.
-    public static <S, A> boolean report(Solution2<S, A> solution, Problem<S, A> prob) {
-        if (solution == null) {
-            System.out.println("no solution found");
-            return false;
-        } else if (!solution.isValid(prob)) {
-            System.out.println("solution is invalid!");
-            return false;
-        } else {
-            System.out.println("solution is valid");
-            System.out.format("total cost is %.1f\n", solution.pathCost);
-            return true;
-        }
-    }
 }
 
-class Node<S>{
+class Node<S> {
     public S state;
     public double cost;
     public double estimatedCost;
 
-    public Node(S s, double d, double e){
+    public Node(S s, double d, double e) {
         this.state = s;
         this.cost = d;
         this.estimatedCost = e;
@@ -81,46 +73,71 @@ class Node<S>{
 
 class AStar<S, A> {
     public static <S, A> Solution2<S, A> search(HeuristicProblem<S, A> prob) {
-        HashMap<S,Double> visited = new HashMap<>();
-        HashMap<S,Tuple<S,A>> parents = new HashMap<>();
-        PriorityQueue<Node<S>> pq = new PriorityQueue<>(Comparator.comparingDouble(a ->  a.estimatedCost));
-        pq.add(new Node<>(prob.initialState(),0.0,prob.estimate(prob.initialState())));
-        visited.put(prob.initialState(), 0.0);
-        S goal_state = null;
-        boolean flag = false;
-        while(!pq.isEmpty() && !flag) {
-            Node<S> curr = pq.poll();
-            S s = curr.state;
-            double currentScore = visited.getOrDefault(s, 0.0);
+        PriorityQueue<Tuple<S, A>> pq = new PriorityQueue<>();
+        Map<S, Double> visited = new HashMap<>();
 
-            if (curr.cost > visited.get(s))
+        pq.add(new Tuple<S, A>(prob.initialState(), null, 0.0, 0.0, null));
+        visited.put(prob.initialState(), 0.0);
+
+        while (!pq.isEmpty()) {
+            Tuple<S, A> curr = pq.poll();
+
+            if (visited.containsKey(curr.state) && visited.get(curr.state) < curr.pathCost)
                 continue;
 
-            for (A action : prob.actions(s)){
-                S nextState = prob.result(s, action);
-                double cost = prob.cost(s, action) + currentScore;
-                if (!visited.containsKey(nextState)|| cost < visited.get(nextState)) {
-                    visited.put(nextState, cost);
-                    parents.put(nextState, new Tuple<>(s, action));
-                    pq.add(new Node<>(nextState, cost, cost + prob.estimate(nextState)));
-                    if (prob.isGoal(nextState)) {
-                        flag = true;
-                        goal_state = nextState;
-                        break;
-                    }
+            if (prob.isGoal(curr.state))
+                return makePath(prob, curr);
+
+            for (A action : prob.actions(curr.state)) {
+                S nextS = prob.result(curr.state, action);
+                double pathCost = curr.pathCost + prob.cost(curr.state, action);
+                double totalCost = pathCost + prob.estimate(nextS);
+
+                if (!visited.containsKey(nextS) || pathCost < visited.get(nextS)) {
+                    visited.put(nextS, pathCost);
+                    pq.add(new Tuple<S, A>(nextS, action, pathCost, totalCost, curr));
                 }
             }
         }
-        if (goal_state != null) {
-            S temp = goal_state;
-            List<A> path = new ArrayList<>();
-            while(!temp.equals(prob.initialState())) {
-                path.add(parents.get(temp).action);
-                temp = parents.get(temp).state;
-            }
-            Collections.reverse(path);
-            return new Solution2<>(path,goal_state,visited.get(goal_state));
-        }
+
         return null;
+    }
+
+    public static <S, A> Solution2<S, A> makePath(HeuristicProblem<S, A> prob, Tuple<S, A> curr) {
+
+        Tuple<S, A> goal = curr;
+
+        LinkedList<A> actions = new LinkedList<>();
+
+        while (curr.action != null) {
+            actions.addFirst(curr.action);
+            curr = curr.parent;
+        }
+
+        return new Solution2<S, A>(actions, goal.state, goal.pathCost);
+    }
+
+    public static class Tuple<S, A> implements Comparable<Tuple<S, A>> {
+        public S state;
+        public A action;
+        public double pathCost;
+        public double totalCost;
+        public Tuple<S, A> parent;
+
+        public Tuple(
+                S state, A action,
+                double pathCost,
+                double totalCost, Tuple<S, A> parent) {
+            this.state = state;
+            this.pathCost = pathCost;
+            this.action = action;
+            this.totalCost = totalCost;
+            this.parent = parent;
+        }
+
+        @Override
+        public int compareTo(Tuple<S, A> other) {
+            return Double.compare(this.totalCost, other.totalCost);
+        }
     }
 }
