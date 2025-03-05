@@ -1,10 +1,8 @@
 import game.board.compact.BoardCompact;
 import game.board.compact.CTile;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Set;
 
 public class DeadSquareDetector {
 

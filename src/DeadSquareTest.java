@@ -1,5 +1,4 @@
 import java.io.File;
-import java.util.*;
 
 import game.board.compact.*;
 import game.board.oop.*;

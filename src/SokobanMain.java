@@ -1,7 +1,6 @@
 import static java.lang.System.out;
 
 import java.io.File;
-import java.io.PrintStream;
 
 import game.*;
 import tournament.*;
@@ -9,15 +8,18 @@ import tournament.*;
 public class SokobanMain {
     static String describe(SokobanResultType type) {
         switch (type) {
-            case VICTORY: return "solved";
-            case TIMEOUT: return "TIMEOUT";
-            default: return "FAILED";
+            case VICTORY:
+                return "solved";
+            case TIMEOUT:
+                return "TIMEOUT";
+            default:
+                return "FAILED";
         }
     }
 
     public static SokobanResultType runLevel(
-        IAgent agent, String agentId, String levelset, int level,
-        String resultDir, int timeout, boolean verbose, boolean optimal) {
+            IAgent agent, String agentId, String levelset, int level,
+            String resultDir, int timeout, boolean verbose, boolean optimal) {
 
         agent.init(optimal, verbose);
 
@@ -27,12 +29,11 @@ public class SokobanMain {
         if (verbose)
             System.out.println();
 
-        SokobanResult result =
-            Sokoban.simAgentLevel(agentId, levelset, level, timeout, agent, verbose, optimal);
+        SokobanResult result = Sokoban.simAgentLevel(agentId, levelset, level, timeout, agent, verbose, optimal);
 
         SokobanResultType resultType = result.getResult();
         System.out.printf("%s in %.1f ms",
-            describe(resultType), (double) result.getSimTimeMillis());
+                describe(resultType), (double) result.getSimTimeMillis());
 
         if (resultType == SokobanResultType.VICTORY)
             System.out.printf(" (%d steps)", result.getSteps());
@@ -49,7 +50,7 @@ public class SokobanMain {
     }
 
     static void runLevelSet(String agentId, String className, String levelset, int maxFail, String resultDir,
-                            int timeout, boolean verbose, boolean optimal) {
+            int timeout, boolean verbose, boolean optimal) {
         System.out.printf("Running %s on levels in %s\n", className, levelset);
 
         SokobanConfig config = new SokobanConfig();
@@ -59,8 +60,8 @@ public class SokobanMain {
         config.verbose = verbose;
 
         RunSokobanLevels run = new RunSokobanLevels(
-            config, className, levelset,
-            resultDir == null ? null : new File(resultDir), maxFail);
+                config, className, levelset,
+                resultDir == null ? null : new File(resultDir), maxFail);
         run.run();
     }
 
@@ -78,7 +79,7 @@ public class SokobanMain {
         System.exit(1);
     }
 
-	public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         String agentId = null;
         String className = null;
         String levelset = "easy.sok";
@@ -89,7 +90,7 @@ public class SokobanMain {
         int timeout = 0;
         boolean verbose = false;
 
-        for (int i = 0 ; i < args.length ; ++i) {
+        for (int i = 0; i < args.length; ++i) {
             String s = args[i];
             switch (s) {
                 case "-id":
@@ -130,15 +131,13 @@ public class SokobanMain {
                 Sokoban.playHumanLevel(levelset, level);
             else
                 Sokoban.playHumanFile(levelset);
-        else
-            if (level > 0) {
-                IAgent agent = (IAgent) Class.forName(className).getConstructor().newInstance();
-                SokobanResultType resultType = runLevel(
+        else if (level > 0) {
+            IAgent agent = (IAgent) Class.forName(className).getConstructor().newInstance();
+            SokobanResultType resultType = runLevel(
                     agent, agentId, levelset, level, resultDir, timeout, verbose, optimal);
-                System.exit(resultType.getExitValue());	    	    
-            }
-            else
-                runLevelSet(agentId, className, levelset, maxFail,
-                            resultDir, timeout, verbose, optimal);
+            System.exit(resultType.getExitValue());
+        } else
+            runLevelSet(agentId, className, levelset, maxFail,
+                    resultDir, timeout, verbose, optimal);
     }
 }
