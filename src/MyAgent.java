@@ -25,7 +25,7 @@ public class MyAgent extends ArtificialAgent {
 	@Override
 	protected List<EDirection> think(BoardCompact compactBoard) {
 		this.compactBoard = compactBoard;
-		this.deadSquares = DeadSquareDetector.detect(this.compactBoard);
+		// this.deadSquares = DeadSquareDetector.detect(this.compactBoard);
 		// Only convert to slim once at the start
 		if (this.firstIteration) {
 			BoardSlim initialBoard = convertToSlim(compactBoard);
@@ -33,7 +33,7 @@ public class MyAgent extends ArtificialAgent {
 			this.firstIteration = false;
 		}
 
-		// this.deadSquares = DeadSquareDetector.detect(this.board);
+		this.deadSquares = DeadSquareDetector.detect(this.board);
 
 		searchedNodes = 0;
 		long searchStartMillis = System.currentTimeMillis();
