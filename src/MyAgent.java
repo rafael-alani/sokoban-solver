@@ -19,11 +19,22 @@ public class MyAgent extends ArtificialAgent {
 	protected BoardSlim board;
 	protected BoardCompact compactBoard;
 	protected int searchedNodes;
+	protected boolean[][] deadSquares;
+	private boolean firstIteration = true;
 
 	@Override
 	protected List<EDirection> think(BoardCompact compactBoard) {
 		this.compactBoard = compactBoard;
-		this.board = convertToSlim(compactBoard);
+		this.deadSquares = DeadSquareDetector.detect(this.compactBoard);
+		// Only convert to slim once at the start
+		if (this.firstIteration) {
+			BoardSlim initialBoard = convertToSlim(compactBoard);
+			this.board = initialBoard;
+			this.firstIteration = false;
+		}
+
+		// this.deadSquares = DeadSquareDetector.detect(this.board);
+
 		searchedNodes = 0;
 		long searchStartMillis = System.currentTimeMillis();
 
@@ -48,7 +59,6 @@ public class MyAgent extends ArtificialAgent {
 	}
 
 	public class SokobanProblem implements HeuristicProblem<BoardSlim, SAction> {
-		boolean[][] deadSquares;
 
 		// public SokobanProblem(BoardCompact board) {
 		// this.deadSquares = DeadSquareDetector.detect(board);
@@ -58,7 +68,8 @@ public class MyAgent extends ArtificialAgent {
 		public double estimate(BoardSlim state) {
 			double totalEstimate = 0;
 
-			boolean[][] deadSquares = DeadSquareDetector.detect(compactBoard);
+			// boolean[][] deadSquares = DeadSquareDetector.detect(compactBoard);
+			boolean[][] deadSquares = MyAgent.this.deadSquares;
 			// IGNORE THE COLOR OF THE BOXES, only loses speed
 			// tried keeping a map of the closes box and hole in state and update but slower
 			List<int[]> goals = new ArrayList<>();
@@ -122,6 +133,7 @@ public class MyAgent extends ArtificialAgent {
 
 		@Override
 		public BoardSlim initialState() {
+			// Use the initial board state that was converted once
 			return board;
 		}
 
@@ -144,8 +156,10 @@ public class MyAgent extends ArtificialAgent {
 
 		@Override
 		public BoardSlim result(BoardSlim state, SAction action) {
+			// Create new state through BoardSlim operations only
 			BoardSlim newState = state.clone();
 			action.perform(newState);
+			newState.nullHash(); // Ensure hash is recomputed when needed
 			return newState;
 		}
 
@@ -160,6 +174,10 @@ public class MyAgent extends ArtificialAgent {
 		}
 	}
 
+	/**
+	 * Convert from BoardCompact to BoardSlim. This should only be called once at
+	 * the start.
+	 */
 	private BoardSlim convertToSlim(BoardCompact compact) {
 		BoardSlim slim = new BoardSlim((byte) compact.width(), (byte) compact.height());
 
@@ -175,11 +193,9 @@ public class MyAgent extends ArtificialAgent {
 				}
 				if (CTile.isSomeBox(compact.tile(x, y))) {
 					tile |= STile.BOX_FLAG;
-					// slim.boxCount++;
 				}
 				if (CTile.forSomeBox(compact.tile(x, y))) {
 					tile |= STile.PLACE_FLAG;
-					// slim.boxInPlaceCount++;
 				}
 				if (CTile.isPlayer(compact.tile(x, y))) {
 					tile |= STile.PLAYER_FLAG;
@@ -191,6 +207,7 @@ public class MyAgent extends ArtificialAgent {
 			}
 		}
 
+		// Update box counts in one pass
 		for (int x = 0; x < slim.width(); x++) {
 			for (int y = 0; y < slim.height(); y++) {
 				if (STile.isBox(slim.tile(x, y))) {

@@ -37,16 +37,17 @@ public class DeadSquareTest {
             printLevelWithTargets(board);
             System.out.println();
 
-            BoardCompact bc = board.makeBoardCompact();
+            // BoardCompact bc = board.makeBoardCompact();
 
-            boolean[][] dead = DeadSquareDetector.detect(bc);
+            // boolean[][] dead = DeadSquareDetector.detect(bc);
 
-            System.out.println("dead squares: \n");
-            for (int y = 0; y < bc.height(); ++y) {
-                for (int x = 0; x < bc.width(); ++x)
-                    System.out.print(CTile.isWall(bc.tile(x, y)) ? '#' : (dead[x][y] ? 'X' : '_'));
-                System.out.println();
-            }
+            // System.out.println("dead squares: \n");
+            // for (int y = 0; y < bc.height(); ++y) {
+            // for (int x = 0; x < bc.width(); ++x)
+            // System.out.print(CTile.isWall(bc.tile(x, y)) ? '#' : (dead[x][y] ? 'X' :
+            // '_'));
+            // System.out.println();
+            // }
             System.out.println();
         }
     }
