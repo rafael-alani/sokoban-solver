@@ -6,18 +6,34 @@ import agents.ArtificialAgent;
 import game.actions.EDirection;
 import game.actions.compact.*;
 import game.board.compact.BoardCompact;
-
 import game.board.compact.CTile;
 
 /**
- * The simplest Tree-DFS agent.
- * 
- * @author Jimmy
+ * Optimized Tree-DFS agent using array-based structures.
  */
 public class MyAgent extends ArtificialAgent {
 	protected BoardCompact board;
 	protected int searchedNodes;
 	protected boolean[][] deadSquares;
+
+	// Pre-allocate arrays for better performance
+	private static final int MAX_GOALS = 10;
+	private int[][] goalCoords;
+	private int goalCount;
+	private CAction[] possibleActions;
+
+	public MyAgent() {
+		goalCoords = new int[MAX_GOALS][2];
+		// Pre-allocate array for all possible actions (moves + pushes)
+		possibleActions = new CAction[8]; // 4 moves + 4 pushes
+		int i = 0;
+		for (CMove move : CMove.getActions()) {
+			possibleActions[i++] = move;
+		}
+		for (CPush push : CPush.getActions()) {
+			possibleActions[i++] = push;
+		}
+	}
 
 	@Override
 	protected List<EDirection> think(BoardCompact board) {
@@ -51,32 +67,33 @@ public class MyAgent extends ArtificialAgent {
 		public double estimate(BoardCompact state) {
 			double totalEstimate = 0;
 			boolean[][] deadSquares = MyAgent.this.deadSquares;
-			// IGNORE THE COLOR OF THE BOXES, only loses speed
-			// tried keeping a map of the closes box and hole in state and update but slower
-			List<int[]> goals = new ArrayList<>();
+
+			// Update goals array
+			goalCount = 0;
 			for (int x = 0; x < state.width(); x++) {
 				for (int y = 0; y < state.height(); y++) {
 					if (CTile.forSomeBox(state.tile(x, y))) {
-						goals.add(new int[] { x, y });
+						goalCoords[goalCount][0] = x;
+						goalCoords[goalCount][1] = y;
+						goalCount++;
 					}
 				}
 			}
 
-			// // maybe keep track of assigned goals?
+			// Calculate distances using pre-allocated arrays
 			for (int x = 0; x < state.width(); x++) {
 				for (int y = 0; y < state.height(); y++) {
 					if (CTile.isSomeBox(state.tile(x, y))) {
-						// box is fucked
+						// Check for dead squares
 						if (deadSquares[x][y] && !CTile.forSomeBox(state.tile(x, y))) {
-							totalEstimate += 300; // play with this, to get best result
+							totalEstimate += 300;
 							continue;
 						}
 
-						// manhatan but walls are hevily penilised
-						// honestly can be removed, does nothing
+						// Find minimum Manhattan distance to goals
 						double minDistance = Double.MAX_VALUE;
-						for (int[] goal : goals) {
-							double distance = Math.abs(x - goal[0]) + Math.abs(y - goal[1]);
+						for (int i = 0; i < goalCount; i++) {
+							double distance = Math.abs(x - goalCoords[i][0]) + Math.abs(y - goalCoords[i][1]);
 							minDistance = Math.min(minDistance, distance);
 						}
 						totalEstimate += minDistance;
@@ -93,15 +110,13 @@ public class MyAgent extends ArtificialAgent {
 
 		@Override
 		public List<CAction> actions(BoardCompact state) {
-			List<CAction> actions = new ArrayList<CAction>(4);
-			for (CMove move : CMove.getActions()) {
-				if (move.isPossible(state)) {
-					actions.add(move);
-				}
-			}
-			for (CPush push : CPush.getActions()) {
-				if (push.isPossible(state)) {
-					actions.add(push);
+			// Use ArrayList with initial capacity for better performance
+			List<CAction> actions = new ArrayList<>(8);
+
+			// Check pre-allocated possible actions
+			for (CAction action : possibleActions) {
+				if (action != null && action.isPossible(state)) {
+					actions.add(action);
 				}
 			}
 

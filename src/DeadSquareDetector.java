@@ -1,73 +1,92 @@
 import game.board.compact.BoardCompact;
 import game.board.compact.CTile;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
-
 public class DeadSquareDetector {
+    // Maximum queue size (width * height should be enough for any board)
+    private static final int MAX_QUEUE_SIZE = 200;
 
-    public static class Point {
-        public int x, y;
+    // Array-based queue for coordinates
+    private static class CoordQueue {
+        private final int[] xCoords;
+        private final int[] yCoords;
+        private int head = 0;
+        private int tail = 0;
+        private int size = 0;
 
-        public Point(int x, int y) {
-            this.x = x;
-            this.y = y;
+        public CoordQueue() {
+            xCoords = new int[MAX_QUEUE_SIZE];
+            yCoords = new int[MAX_QUEUE_SIZE];
+        }
+
+        public void add(int x, int y) {
+            xCoords[tail] = x;
+            yCoords[tail] = y;
+            tail = (tail + 1) % MAX_QUEUE_SIZE;
+            size++;
+        }
+
+        public void poll(int[] result) {
+            result[0] = xCoords[head];
+            result[1] = yCoords[head];
+            head = (head + 1) % MAX_QUEUE_SIZE;
+            size--;
+        }
+
+        public boolean isEmpty() {
+            return size == 0;
         }
     }
 
-    // Our cute BFS approach
-    // We will spread aliveness so basically anything that the box can be pushed
-    // from to the goal state is alive
-    // See if our player can pull the box from the cell or not
+    // Pre-allocated arrays for better performance
+    private static final int[][] DIRECTIONS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+    private static final int[] CURRENT = new int[2];
+
     public static boolean[][] detect(BoardCompact state) {
         int w = state.width();
         int h = state.height();
         boolean[][] live = new boolean[w][h];
         boolean[][] dead = new boolean[w][h];
-        Queue<Point> queue = new LinkedList<>();
+        CoordQueue queue = new CoordQueue();
 
-        // Initialize: add all goal cells (cells with a goal marker) to the queue.
+        // Initialize: add all goal cells to the queue
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
                 if (CTile.forSomeBox(state.tile(x, y))) {
                     live[x][y] = true;
-                    queue.add(new Point(x, y));
+                    queue.add(x, y);
                 }
             }
         }
 
-        // Directions representing up, down, left, right.
-        int[][] directions = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
-
-        // Reverse BFS: try to "pull" the stone back from live cells.
+        // Reverse BFS: try to "pull" the stone back from live cells
         while (!queue.isEmpty()) {
-            Point current = queue.poll();
-            for (int[] d : directions) {
-                int ax = current.x - d[0];
-                int ay = current.y - d[1];
+            queue.poll(CURRENT);
+            int cx = CURRENT[0];
+            int cy = CURRENT[1];
+
+            for (int[] d : DIRECTIONS) {
+                int ax = cx - d[0];
+                int ay = cy - d[1];
                 int px = ax - d[0];
                 int py = ay - d[1];
 
-                // Check bounds for both the candidate stone cell and player cell.
+                // Check bounds for both the candidate stone cell and player cell
                 if (ax < 0 || ax >= w || ay < 0 || ay >= h)
                     continue;
                 if (px < 0 || px >= w || py < 0 || py >= h)
                     continue;
 
-                // Only mark as live if both the candidate stone cell and player cell are not
-                // walls.
+                // Only mark as live if both cells are not walls
                 if (!CTile.isWall(state.tile(ax, ay)) &&
                         !CTile.isWall(state.tile(px, py)) &&
                         !live[ax][ay]) {
                     live[ax][ay] = true;
-                    queue.add(new Point(ax, ay));
+                    queue.add(ax, ay);
                 }
             }
         }
 
-        // All non-wall cells not marked as live are dead positions.
+        // Mark dead positions
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
                 if (!CTile.isWall(state.tile(x, y)) && !live[x][y]) {
@@ -75,6 +94,7 @@ public class DeadSquareDetector {
                 }
             }
         }
+
         return dead;
     }
     // public static boolean[][] detect(BoardCompact state) {
