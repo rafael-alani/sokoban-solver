@@ -163,7 +163,8 @@ public class MyAgent extends ArtificialAgent {
 	private BoardSlim convertToSlim(BoardCompact compact) {
 		BoardSlim slim = new BoardSlim((byte) compact.width(), (byte) compact.height());
 
-		// Copy the board state
+		slim.boxCount = 0;
+		slim.boxInPlaceCount = 0;
 		for (int x = 0; x < compact.width(); x++) {
 			for (int y = 0; y < compact.height(); y++) {
 				byte tile = 0;
@@ -174,9 +175,11 @@ public class MyAgent extends ArtificialAgent {
 				}
 				if (CTile.isSomeBox(compact.tile(x, y))) {
 					tile |= STile.BOX_FLAG;
+					// slim.boxCount++;
 				}
 				if (CTile.forSomeBox(compact.tile(x, y))) {
 					tile |= STile.PLACE_FLAG;
+					// slim.boxInPlaceCount++;
 				}
 				if (CTile.isPlayer(compact.tile(x, y))) {
 					tile |= STile.PLAYER_FLAG;
@@ -188,9 +191,6 @@ public class MyAgent extends ArtificialAgent {
 			}
 		}
 
-		// Update box counts
-		slim.boxCount = 0;
-		slim.boxInPlaceCount = 0;
 		for (int x = 0; x < slim.width(); x++) {
 			for (int y = 0; y < slim.height(); y++) {
 				if (STile.isBox(slim.tile(x, y))) {
